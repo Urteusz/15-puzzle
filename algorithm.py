@@ -38,6 +38,18 @@ def get_neighbours(i, j, width, height):
   if j < width - 1: moves.append(i, j + 1)
   return moves
 
-def swap(puzzle, x1, y1, x2, y2):
-    puzzle[x1][y1], puzzle[x2][y2] = puzzle[x2][y2], puzzle[x1][y1]
-    return puzzle
+
+def swap(puzzle, i1, j1, i2, j2):
+    new_puzzle = []
+    for row in puzzle:
+        new_row = []
+        for val in row:
+            new_row.append(val)
+        new_puzzle.append(new_row)
+
+    new_puzzle[i1][j1], new_puzzle[i2][j2] = new_puzzle[i2][j2], new_puzzle[i1][j1]
+
+    return new_puzzle
+
+def puzzle_to_tuple(puzzle):
+    return tuple(tuple(row) for row in puzzle)
