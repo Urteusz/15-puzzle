@@ -16,7 +16,7 @@ def read_board(filename):
     SIZE_HEIGHT, SIZE_WIDTH = map(int, lines[0].split())
     puzzle = np.array([list(map(int, line.split())) for line in lines[1:]])
 
-    return puzzle  # Teraz zwraca od razu numpy array
+    return puzzle
 
 
 def print_board(tiles):
@@ -66,16 +66,60 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
 
 
 def main():
-    acronym = input()
-    parametr = input()
-    file_shuffled = input()
-    file_solved = input()
-    file_addons = input()
-    solve(acronym, parametr, file_shuffled, file_solved, file_addons)
+    # acronym = input()
+    # parametr = input()
+    # file_shuffled = input()
+    # file_solved = input()
+    # file_addons = input()
+    # solve(acronym, parametr, file_shuffled, file_solved, file_addons)
+    acronym = "bfs"
+    parametr = "LRUD"
+    for i in range(413):
+        if i<2:
+            path = generate_path(1,i+1)
+            path_solved = generate_path_solved(1,i+1)
+            path_addons = generate_path_addons(1,i+1)
+        elif i<6:
+            path = generate_path(2,i+1-2)
+            path_solved = generate_path_solved(2,i+1-2)
+            path_addons = generate_path_addons(2,i+1-2)
+        elif i<16:
+            path = generate_path(3,i+1-6)
+            path_solved = generate_path_solved(3,i+1-6)
+            path_addons = generate_path_addons(3,i+1-6)
+        elif i<40:
+            path = generate_path(4,i+1-16)
+            path_solved = generate_path_solved(4,i+1-16)
+            path_addons = generate_path_addons(4,i+1-16)
+        elif i<94:
+            path = generate_path(5,i+1-40)
+            path_solved = generate_path_solved(5,i+1-40)
+            path_addons = generate_path_addons(5,i+1-40)
+        elif i<201:
+            path = generate_path(6,i+1-94)
+            path_solved = generate_path_solved(6,i+1-94)
+            path_addons = generate_path_addons(6,i+1-94)
+        else:
+            path = generate_path(7,i+1-201)
+            path_solved = generate_path_solved(7,i+1-201)
+            path_addons = generate_path_addons(7,i+1-201)
 
+        file_shuffled = path + ".txt"
+        print(file_shuffled)
+        file_solved = path_solved + "_solved.txt"
+        file_addons = path_addons + "_addons.txt"
 
+        solve(acronym, parametr, file_shuffled, file_solved, file_addons)
 
-
+def generate_path(y, x):
+    path = "C:/Users/Urteusz/Downloads/Puzzle/start/4x4_{:02d}_{:05d}".format(y, x)
+    return path
+def generate_path_solved(y, x):
+    path = "C:/Users/Urteusz/Downloads/Puzzle/solved/4x4_{:02d}_{:05d}".format(y, x)
+    return path
+def generate_path_addons(y, x):
+    path = "C:/Users/Urteusz/Downloads/Puzzle/addons/4x4_{:02d}_{:05d}".format(y, x)
+    return path
 
 if __name__ == "__main__":
     main()

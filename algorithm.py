@@ -94,12 +94,9 @@ def bfs(puzzle, search_order):
         current_state = queue.popleft()
         processed_states += 1
 
-        # Konwersja z krotki z powrotem na tablicę
         current_puzzle = np.array(current_state)
 
-        # Sprawdź, czy osiągnięto stan docelowy
         if current_state == target:
-            # Odtwarzanie ścieżki
             path = []
             state = current_state
             while move_direction[state] is not None:
@@ -107,7 +104,6 @@ def bfs(puzzle, search_order):
                 state = parent[state]
             path.reverse()
 
-            # Określenie głębokości rozwiązania
             solution_depth = len(path)
             max_depth = max(max_depth, solution_depth)
 
@@ -115,21 +111,16 @@ def bfs(puzzle, search_order):
             execution_time = (end_time - start_time) * 1000
             return path, visited_states, processed_states, max_depth, execution_time
 
-        # Znajdź pozycję pustego pola
         i, j = find_zero(current_puzzle)
 
-        # Sprawdź wszystkie możliwe ruchy zgodnie z podanym porządkiem
         for direction in search_order:
             di, dj = directions[direction]
             ni, nj = i + di, j + dj
 
-            # Sprawdź, czy ruch jest możliwy
             if 0 <= ni < height and 0 <= nj < width:
-                # Wykonaj ruch
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)
 
-                # Jeśli ten stan nie był jeszcze odwiedzony
                 if new_state not in visited:
                     queue.append(new_state)
                     visited[new_state] = True
@@ -137,7 +128,6 @@ def bfs(puzzle, search_order):
                     parent[new_state] = current_state
                     move_direction[new_state] = direction
 
-                    # Aktualizacja maksymalnej głębokości
                     current_depth = 0
                     state = current_state
                     while state != initial_state:
