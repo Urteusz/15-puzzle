@@ -6,6 +6,7 @@ from collections import deque
 from scipy.optimize import newton
 
 EMPTY_TILE = 0
+max_depth = 20
 
 directions = {
             'L': (0, -1),  # Lewo
@@ -65,6 +66,7 @@ def puzzle_to_tuple(puzzle):
 
 
 def bfs(puzzle, search_order):
+
     start_time = time.time()
     height, width = puzzle.shape
 
