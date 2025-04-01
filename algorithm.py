@@ -139,3 +139,11 @@ def bfs(puzzle, search_order):
 
     # Jeśli nie znaleziono rozwiązania
     return None, visited_states, processed_states, max_depth
+
+def astr(puzzle, heurystyka):
+    if heurystyka=="hamm":
+        print(heurystyka)
+    elif heurystyka=="manh":
+        print(heurystyka)
+    else:
+        print("error");

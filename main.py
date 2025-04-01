@@ -67,14 +67,15 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
         save_solved(path,file_solved)
         save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
     elif acronym == "dfs":
-        path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
-        if path is None:
-            print("Lipa")
-        save_solved(path, file_solved)
-        save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
+        print("Lipa")
+        # path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
+        # if path is None:
+        #     print("Lipa")
+        # save_solved(path, file_solved)
+        # save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
     elif acronym == "astr":
-        print(parametr)
-
+        print("Lipa")
+        # path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
 
 def main():
     # acronym = input()
