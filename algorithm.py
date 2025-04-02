@@ -1,4 +1,4 @@
-import time
+import timeit
 
 import numpy as np
 from collections import deque
@@ -67,7 +67,7 @@ def puzzle_to_tuple(puzzle):
 
 def bfs(puzzle, search_order):
 
-    start_time = time.time()
+    start_time = timeit.default_timer()
     height, width = puzzle.shape
 
     # Konwersja do krotki dla hashowania
@@ -109,7 +109,7 @@ def bfs(puzzle, search_order):
             solution_depth = len(path)
             max_depth = max(max_depth, solution_depth)
 
-            end_time = time.time()
+            end_time = timeit.default_timer()
             execution_time = (end_time - start_time) * 1000
             return path, visited_states, processed_states, max_depth, execution_time
 
@@ -141,10 +141,9 @@ def bfs(puzzle, search_order):
     return None, visited_states, processed_states, max_depth
 
 def dfs(puzzle, search_order):
-    start_time = time.time()
+    start_time = timeit.default_timer()
     height, width = puzzle.shape
 
-    # Konwersja do krotki dla hashowania
     initial_state = puzzle_to_tuple(puzzle)
 
     # Stos przechowujący (stan, głębokość)
@@ -187,7 +186,7 @@ def dfs(puzzle, search_order):
             solution_depth = len(path)
             max_reached_depth = max(max_reached_depth, solution_depth)
 
-            end_time = time.time()
+            end_time = timeit.default_timer()
             execution_time = (end_time - start_time) * 1000
             return path, visited_states, processed_states, max_reached_depth, execution_time
 
@@ -210,7 +209,7 @@ def dfs(puzzle, search_order):
 
                     max_reached_depth = max(max_reached_depth, depth + 1)
 
-    end_time = time.time()
+    end_time = timeit.default_timer()
     execution_time = (end_time - start_time) * 1000
     return None, visited_states, processed_states, max_reached_depth, execution_time
 
@@ -221,4 +220,4 @@ def astr(puzzle, heurystyka):
     elif heurystyka=="manh":
         print(heurystyka)
     else:
-        print("error");
+        print("error")

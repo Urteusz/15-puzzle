@@ -67,12 +67,11 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
         save_solved(path,file_solved)
         save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
     elif acronym == "dfs":
-        print("Lipa")
-        # path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
-        # if path is None:
-        #     print("Lipa")
-        # save_solved(path, file_solved)
-        # save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
+        path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
+        if path is None:
+            print("Lipa")
+        save_solved(path, file_solved)
+        save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
     elif acronym == "astr":
         print("Lipa")
         # path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
@@ -124,13 +123,13 @@ def main():
         print(path)
 
 def generate_path(acronym,y, x):
-    path = "C:/Users/mateu/Downloads/Puzzle/{}/start/4x4_{:02d}_{:05d}".format(acronym,y, x)
+    path = "C:/Users/Urteusz/Downloads/Puzzle/{}/start/4x4_{:02d}_{:05d}".format(acronym,y, x)
     return path
 def generate_path_solved(acronym,y, x):
-    path = "C:/Users/mateu/Downloads/Puzzle/{}/solved/4x4_{:02d}_{:05d}".format(acronym,y, x)
+    path = "C:/Users/Urteusz/Downloads/Puzzle/{}/solved/4x4_{:02d}_{:05d}".format(acronym,y, x)
     return path
 def generate_path_addons(acronym,y, x):
-    path = "C:/Users/mateu/Downloads/Puzzle/{}/addons/4x4_{:02d}_{:05d}".format(acronym,y, x)
+    path = "C:/Users/Urteusz/Downloads/Puzzle/{}/addons/4x4_{:02d}_{:05d}".format(acronym,y, x)
     return path
 
 if __name__ == "__main__":
