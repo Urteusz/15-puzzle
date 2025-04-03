@@ -1,12 +1,8 @@
 import timeit
-
 import numpy as np
-from collections import deque
-
-from scipy.optimize import newton
 
 EMPTY_TILE = 0
-max_depth = 20
+
 
 directions = {
             'L': (0, -1),  # Lewo
@@ -50,174 +46,17 @@ def get_neighbours(i, j, width, height):
 
 
 def swap(puzzle, i1, j1, i2, j2):
-    new_puzzle = []
-    for row in puzzle:
-        new_row = []
-        for val in row:
-            new_row.append(val)
-        new_puzzle.append(new_row)
-
-    new_puzzle[i1][j1], new_puzzle[i2][j2] = new_puzzle[i2][j2], new_puzzle[i1][j1]
-
+    new_puzzle = np.copy(puzzle)
+    new_puzzle[i1, j1], new_puzzle[i2, j2] = new_puzzle[i2, j2], new_puzzle[i1, j1]
     return new_puzzle
+
 
 def puzzle_to_tuple(puzzle):
     return tuple(tuple(row) for row in puzzle)
 
 
-def bfs(puzzle, search_order):
-
-    start_time = timeit.default_timer()
-    height, width = puzzle.shape
-
-    # Konwersja do krotki dla hashowania
-    initial_state = puzzle_to_tuple(puzzle)
-
-    # Kolejka dla BFS
-    queue = deque([initial_state])
-
-    # Słownik do śledzenia odwiedzonych stanów
-    visited = {initial_state: True}
-
-    # Słownik do śledzenia ścieżki (poprzedników i wykonanych ruchów)
-    parent = {initial_state: None}
-    move_direction = {initial_state: None}
-
-    # Stan docelowy
-    target = matrix(width, height, list(range(1, width * height)) + [0])
-    target = puzzle_to_tuple(target)
-
-    # Liczniki do statystyk
-    visited_states = 1
-    processed_states = 0
-    max_depth = 0
-
-    while queue:
-        current_state = queue.popleft()
-        processed_states += 1
-
-        current_puzzle = np.array(current_state)
-
-        if current_state == target:
-            path = []
-            state = current_state
-            while move_direction[state] is not None:
-                path.append(move_direction[state])
-                state = parent[state]
-            path.reverse()
-
-            solution_depth = len(path)
-            max_depth = max(max_depth, solution_depth)
-
-            end_time = timeit.default_timer()
-            execution_time = (end_time - start_time) * 1000
-            return path, visited_states, processed_states, max_depth, execution_time
-
-        i, j = find_zero(current_puzzle)
-
-        for direction in search_order:
-            di, dj = directions[direction]
-            ni, nj = i + di, j + dj
-
-            if 0 <= ni < height and 0 <= nj < width:
-                new_puzzle = swap(current_puzzle, i, j, ni, nj)
-                new_state = puzzle_to_tuple(new_puzzle)
-
-                if new_state not in visited:
-                    queue.append(new_state)
-                    visited[new_state] = True
-                    visited_states += 1
-                    parent[new_state] = current_state
-                    move_direction[new_state] = direction
-
-                    current_depth = 0
-                    state = current_state
-                    while state != initial_state:
-                        current_depth += 1
-                        state = parent[state]
-                    max_depth = max(max_depth, current_depth + 1)
-
-    # Jeśli nie znaleziono rozwiązania
-    return None, visited_states, processed_states, max_depth
-
-def dfs(puzzle, search_order):
-    start_time = timeit.default_timer()
-    height, width = puzzle.shape
-
-    initial_state = puzzle_to_tuple(puzzle)
-
-    # Stos przechowujący (stan, głębokość)
-    stack = [(initial_state, 0)]  # Pierwszy stan z głębokością 0
-
-    # Słownik do śledzenia odwiedzonych stanów
-    visited = {initial_state: True}
-
-    # Słownik do śledzenia ścieżki (poprzedników i wykonanych ruchów)
-    parent = {initial_state: None}
-    move_direction = {initial_state: None}
-
-    # Stan docelowy
-    target = matrix(width, height, list(range(1, width * height)) + [0])
-    target = puzzle_to_tuple(target)
-
-    # Liczniki do statystyk
-    visited_states = 1
-    processed_states = 0
-    max_reached_depth = 0
-
-    while stack:
-        current_state, depth = stack.pop()  # Pobieramy stan i głębokość
-        processed_states += 1
-
-        # Jeśli osiągnięto maksymalną głębokość, wykonujemy nawrót (backtracking)
-        if depth >= max_depth:
-            continue  # Pomijamy dalsze przetwarzanie tego stanu
-
-        current_puzzle = np.array(current_state)
-
-        if current_state == target:
-            path = []
-            state = current_state
-            while move_direction[state] is not None:
-                path.append(move_direction[state])
-                state = parent[state]
-            path.reverse()
-
-            solution_depth = len(path)
-            max_reached_depth = max(max_reached_depth, solution_depth)
-
-            end_time = timeit.default_timer()
-            execution_time = (end_time - start_time) * 1000
-            return path, visited_states, processed_states, max_reached_depth, execution_time
-
-        i, j = find_zero(current_puzzle)
-
-        for direction in search_order:
-            di, dj = directions[direction]
-            ni, nj = i + di, j + dj
-
-            if 0 <= ni < height and 0 <= nj < width:
-                new_puzzle = swap(current_puzzle, i, j, ni, nj)
-                new_state = puzzle_to_tuple(new_puzzle)
-
-                if new_state not in visited:
-                    stack.append((new_state, depth + 1))  # Dodajemy stan z nową głębokością
-                    visited[new_state] = True
-                    visited_states += 1
-                    parent[new_state] = current_state
-                    move_direction[new_state] = direction
-
-                    max_reached_depth = max(max_reached_depth, depth + 1)
-
-    end_time = timeit.default_timer()
-    execution_time = (end_time - start_time) * 1000
-    return None, visited_states, processed_states, max_reached_depth, execution_time
 
 
-def astr(puzzle, heurystyka):
-    if heurystyka=="hamm":
-        print(heurystyka)
-    elif heurystyka=="manh":
-        print(heurystyka)
-    else:
-        print("error")
+
+
+
