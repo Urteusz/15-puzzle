@@ -2,11 +2,11 @@ import random
 import os
 from os.path import basename
 import re
+from multiprocessing import Pool, cpu_count
 from algorithm import *
 from astar import astr
 from dfs import dfs
 from bfs import bfs
-from multiprocessing import Pool
 import shutil
 import os
 
@@ -70,12 +70,10 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
     puzzle = read_board(file_shuffled)
     if acronym == "bfs":
         path, visited_states, processed_states, max_depth, timer = bfs(puzzle, parametr)
-        if path is None:
-            print("Lipa")
     elif acronym == "dfs":
         path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
         if path is None:
-            print("Lipa")
+            print("lipa")
     elif acronym == "astr":
         path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
     save_solved(path, file_solved)
@@ -141,11 +139,16 @@ def main():
     acronyms = ["bfs", "dfs"]
     base_path = "C:/Users/mateu/Downloads/Puzzle"
 
+    # solve("dfs", "RDUL", "C:/Users/mateu/Downloads/Puzzle/dfs/start/4x4_07_00206.txt", "C:/Users/mateu/Downloads/Puzzle/dfs/test/4x4_07_00206_solved.txt", "C:/Users/mateu/Downloads/Puzzle/dfs/test/4x4_07_00206_addons.txt")
     # Wyczyść foldery przed startem
     clear_folders(base_path, acronyms, tab_parameter)
 
-    with Pool() as pool:
-        pool.starmap(generate_files_for_params, [(acronym, parametr) for acronym in acronyms for parametr in tab_parameter])
+
+
+    num_workers = max(1, cpu_count() // 2)  # Używa połowy rdzeni
+    with Pool(num_workers) as pool:
+        pool.starmap(generate_files_for_params,
+                     [(acronym, parametr) for acronym in acronyms for parametr in tab_parameter])
 
 
 if __name__ == "__main__":

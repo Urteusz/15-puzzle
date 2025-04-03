@@ -3,6 +3,7 @@ import numpy as np
 
 
 def addons_opener(acronym, choose, subcategories=None):
+    countError = 0
     """
     Funkcja otwiera pliki z danymi i oblicza średnie wartości dla podanych parametrów.
     """
@@ -22,6 +23,8 @@ def addons_opener(acronym, choose, subcategories=None):
                             value = float(lines[choose - 1].strip())
                             averages_per_order[par][level] += value
                             counts_per_order[par][level] += 1
+                        elif lines[0].strip() == "-1":
+                            countError += 1
                 except FileNotFoundError:
                     print(f"Plik {path} nie istnieje.")
                 except (IndexError, ValueError):
@@ -33,7 +36,7 @@ def addons_opener(acronym, choose, subcategories=None):
             if counts_per_order[par][level] > 0:
                 averages_per_order[par][level] /= counts_per_order[par][level]
 
-    return averages_per_order
+    return averages_per_order, countError
 
 
 def generate_path_addons(acronym, parametr, y, x):
@@ -84,7 +87,7 @@ def main():
     # Generowanie wykresów dla BFS
     print("Wykresy dla BFS:")
     for i, kryterium in enumerate(kryteria):
-        bfs_averages = addons_opener("bfs", choose=i + 1)
+        bfs_averages, errorBfs = addons_opener("bfs", choose=i + 1)
 
         # Wyświetlanie średnich dla każdego porządku na konsoli
         print(f"\nKryterium: {kryterium}")
@@ -97,7 +100,7 @@ def main():
     # Generowanie wykresów dla DFS
     print("\nWykresy dla DFS:")
     for i, kryterium in enumerate(kryteria):
-        dfs_averages = addons_opener("dfs", choose=i + 1)
+        dfs_averages,errorDfs = addons_opener("dfs", choose=i + 1)
 
         # Wyświetlanie średnich dla każdego porządku na konsoli
         print(f"\nKryterium: {kryterium}")
@@ -106,7 +109,7 @@ def main():
 
         # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
         rysuj_wykres_słupkowy(dfs_averages, kryterium, "DFS")
-
+    print(f"\nLiczba błędów: BFS: {errorBfs} DFS: { errorDfs}")
 
 if __name__ == "__main__":
     main()

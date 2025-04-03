@@ -1,10 +1,10 @@
 from algorithm import *
-from collections import deque
 
 max_depth = 20
 
 def dfs(puzzle, search_order):
     start_time = timeit.default_timer()
+    search_order = search_order[::-1]
     height, width = puzzle.shape
 
     initial_state = puzzle_to_tuple(puzzle)
@@ -13,7 +13,7 @@ def dfs(puzzle, search_order):
     stack = [(initial_state, 0)]  # Pierwszy stan z głębokością 0
 
     # Słownik do śledzenia odwiedzonych stanów
-    visited = set({initial_state})
+    visited = {initial_state: 0}
 
     # Słownik do śledzenia ścieżki (poprzedników i wykonanych ruchów)
     parent = {initial_state: None}
@@ -56,22 +56,31 @@ def dfs(puzzle, search_order):
         i, j = find_zero(current_puzzle)
 
         for direction in search_order:
-            di, dj = directions[direction]
-            ni, nj = i + di, j + dj
-
-            if 0 <= ni < height and 0 <= nj < width:
+            if can_move(current_puzzle, direction):
+                di, dj = directions[direction]
+                ni, nj = i + di, j + dj
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)
 
-                if new_state not in visited:
+                if new_state not in visited or visited[new_state] > depth + 1:
                     stack.append((new_state, depth + 1))  # Dodajemy stan z nową głębokością
-                    visited.add(new_state)
+                    visited[new_state] = depth + 1
                     visited_states += 1
                     parent[new_state] = current_state
                     move_direction[new_state] = direction
-
                     max_reached_depth = max(max_reached_depth, depth + 1)
+
+
 
     end_time = timeit.default_timer()
     execution_time = (end_time - start_time) * 1000
     return None, visited_states, processed_states, max_reached_depth, execution_time
+
+
+def can_move(puzzle, direction):
+    i, j = find_zero(puzzle)
+    di, dj = directions[direction]
+    ni, nj = i + di, j + dj
+    if ni < 0 or ni >= puzzle.shape[0] or nj < 0 or nj >= puzzle.shape[1]:
+        return False
+    return True
