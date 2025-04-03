@@ -1,70 +1,110 @@
 from matplotlib import pyplot as plt
-from numpy.ma.extras import average as np_average  # Importuj 'average' z numpy z aliasem
-
-from main import *
+import numpy as np
 
 
-def addons_opener(acronym, choose):
-    tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
-    ranges = [0, 2, 6, 16, 40, 94, 201, 413]
-    sums, counts, averages = [0] * 7, [0] * 7, [0] * 7  # Zmieniamy 'average' na 'averages'
+def addons_opener(acronym, choose, subcategories=None):
+    """
+    Funkcja otwiera pliki z danymi i oblicza średnie wartości dla podanych parametrów.
+    """
+    tab_parameter = subcategories or ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
+    ranges = [0, 2, 6, 16, 40, 94, 201, 413]  # Zakresy poziomów
+    averages_per_order = {order: [0] * 7 for order in tab_parameter}  # Średnie dla każdego porządku
+    counts_per_order = {order: [0] * 7 for order in tab_parameter}  # Liczba danych dla każdego porządku
 
     for par in tab_parameter:
-        for level in range(7):
+        for level in range(7):  # Poziomy od 0 do 6
             for i in range(ranges[level], ranges[level + 1]):
                 path = generate_path_addons(acronym, par, level + 1, i - ranges[level] + 1)
                 try:
                     with open(path) as file:
                         lines = file.readlines()
-                        if len(lines) >= choose and lines[0] != -1:
-                            value = float(lines[choose - 1])  # Wybieramy odpowiednią linię
-                            sums[level] += value  # Sumujemy wartość
-                            counts[level] += 1  # Zliczamy liczbę wierszy
-                        else:
-                            print(f"Plik {path} ma mniej niż {choose} linii.")
+                        if len(lines) >= choose and lines[0].strip() != "-1":
+                            value = float(lines[choose - 1].strip())
+                            averages_per_order[par][level] += value
+                            counts_per_order[par][level] += 1
                 except FileNotFoundError:
                     print(f"Plik {path} nie istnieje.")
-                except IndexError:
-                    print(f"Plik {path} nie zawiera wystarczającej liczby wierszy.")
+                except (IndexError, ValueError):
+                    print(f"Nieprawidłowe dane w pliku: {path}")
 
-    for level in range(7):
-        if counts[level] > 0:
-            averages[level] = sums[level] / counts[level]
+    # Obliczanie średnich
+    for par in tab_parameter:
+        for level in range(7):
+            if counts_per_order[par][level] > 0:
+                averages_per_order[par][level] /= counts_per_order[par][level]
+
+    return averages_per_order
 
 
-    return averages
-
-
-
-
-def generate_path_addons(acronym,parametr, y, x):
-    # Generowanie pełnej ścieżki
-    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
+def generate_path_addons(acronym, parametr, y, x):
+    """
+    Generuje ścieżkę do pliku na podstawie podanych parametrów.
+    """
+    path = f"C:/Users/igork/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
     return path
 
 
-def rysuj_wykres(averages):
-    # Tworzenie wykresu słupkowego
-    plt.figure(figsize=(10, 6))
-    poziomy = [i + 1 for i in range(7)]  # Poziomy od 1 do 7
-    plt.bar(poziomy, averages)
-    plt.xlabel('Poziom')
-    plt.ylabel('Średnia wartość')
-    plt.title('Średnie wartości dla różnych poziomów')
-    plt.xticks(poziomy)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+def rysuj_wykres_słupkowy(averages_dict, title):
+    """
+    Tworzy wykres słupkowy z podziałem na poziomy i porządki przeszukiwania.
+    """
+    poziomy = np.arange(1, 8)  # Poziomy od 1 do 7
+    width = 0.1  # Szerokość pojedynczego słupka w grupie
 
-    # Dodawanie wartości nad słupkami
-    for i, v in enumerate(averages):
-        plt.text(i + 1, v, f"{v:.2f}", ha='center', va='bottom')
+    plt.figure(figsize=(12, 8))
+
+    for idx, (order, averages) in enumerate(averages_dict.items()):
+        plt.bar(poziomy + idx * width - (len(averages_dict) / 2) * width,
+                averages,
+                width=width,
+                label=order)
+
+    plt.xlabel('Głębokość rozwiązania')
+    plt.ylabel('Kryterium')
+    plt.title(title)
+    plt.xticks(poziomy)
+
+    plt.legend(title="Porządek przeszukiwania")
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     plt.show()
 
+
 def main():
-    for i in range(5):
-        averages = addons_opener("bfs", i+1)
-        print (f"Średnie wartości dla {i+1} wiersza: {averages}")
-        rysuj_wykres(averages)
+    # Nazwy kryteriów
+    kryteria = [
+        "Długość znalezionego rozwiązania",
+        "Liczba stanów odwiedzonych",
+        "Liczba stanów przetworzonych",
+        "Maksymalna osiągnięta głębokość rekursji",
+        "Czas trwania procesu obliczeniowego"
+    ]
+
+    # Generowanie wykresów dla BFS
+    print("Wykresy dla BFS:")
+    for i, kryterium in enumerate(kryteria):
+        bfs_averages = addons_opener("bfs", choose=i + 1)
+
+        # Wyświetlanie średnich dla każdego porządku na konsoli
+        print(f"\nKryterium: {kryterium}")
+        for order, averages in bfs_averages.items():
+            print(f"BFS ({order}) - średnie wartości: {averages}")
+
+        # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
+        rysuj_wykres_słupkowy(bfs_averages, f"BFS - {kryterium}")
+
+    # Generowanie wykresów dla DFS
+    print("\nWykresy dla DFS:")
+    for i, kryterium in enumerate(kryteria):
+        dfs_averages = addons_opener("dfs", choose=i + 1)
+
+        # Wyświetlanie średnich dla każdego porządku na konsoli
+        print(f"\nKryterium: {kryterium}")
+        for order, averages in dfs_averages.items():
+            print(f"DFS ({order}) - średnie wartości: {averages}")
+
+        # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
+        rysuj_wykres_słupkowy(dfs_averages, f"DFS - {kryterium}")
 
 
 if __name__ == "__main__":
