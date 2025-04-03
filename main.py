@@ -122,24 +122,24 @@ def generate_files_for_params(acronym, parametr):
 
 
 def generate_path(acronym, y, x):
-    path = f"C:/Users/igork/Downloads/Puzzle/{acronym}/start/4x4_{y:02d}_{x:05d}"
+    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/start/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def generate_path_solved(acronym, parametr, y, x):
-    path = f"C:/Users/igork/Downloads/Puzzle/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
+    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def generate_path_addons(acronym, parametr, y, x):
-    path = f"C:/Users/igork/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
+    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
     acronyms = ["bfs", "dfs"]
-    base_path = "C:/Users/igork/Downloads/Puzzle"
+    base_path = "C:/Users/mateu/Downloads/Puzzle"
 
     # Wyczyść foldery przed startem
     clear_folders(base_path, acronyms, tab_parameter)

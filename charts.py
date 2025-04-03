@@ -40,11 +40,11 @@ def generate_path_addons(acronym, parametr, y, x):
     """
     Generuje ścieżkę do pliku na podstawie podanych parametrów.
     """
-    path = f"C:/Users/igork/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
+    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
     return path
 
 
-def rysuj_wykres_słupkowy(averages_dict, title):
+def rysuj_wykres_słupkowy(averages_dict, title, alogorithm):
     """
     Tworzy wykres słupkowy z podziałem na poziomy i porządki przeszukiwania.
     """
@@ -53,6 +53,7 @@ def rysuj_wykres_słupkowy(averages_dict, title):
 
     plt.figure(figsize=(12, 8))
 
+
     for idx, (order, averages) in enumerate(averages_dict.items()):
         plt.bar(poziomy + idx * width - (len(averages_dict) / 2) * width,
                 averages,
@@ -60,8 +61,8 @@ def rysuj_wykres_słupkowy(averages_dict, title):
                 label=order)
 
     plt.xlabel('Głębokość rozwiązania')
-    plt.ylabel('Kryterium')
-    plt.title(title)
+    plt.ylabel(title)
+    plt.title(f'{alogorithm} - {title}')
     plt.xticks(poziomy)
 
     plt.legend(title="Porządek przeszukiwania")
@@ -91,7 +92,7 @@ def main():
             print(f"BFS ({order}) - średnie wartości: {averages}")
 
         # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
-        rysuj_wykres_słupkowy(bfs_averages, f"BFS - {kryterium}")
+        rysuj_wykres_słupkowy(bfs_averages,  kryterium, "BFS")
 
     # Generowanie wykresów dla DFS
     print("\nWykresy dla DFS:")
@@ -104,7 +105,7 @@ def main():
             print(f"DFS ({order}) - średnie wartości: {averages}")
 
         # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
-        rysuj_wykres_słupkowy(dfs_averages, f"DFS - {kryterium}")
+        rysuj_wykres_słupkowy(dfs_averages, kryterium, "DFS")
 
 
 if __name__ == "__main__":
