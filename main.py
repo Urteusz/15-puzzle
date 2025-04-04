@@ -4,13 +4,12 @@ import random
 import os
 from os.path import basename
 import re
-from multiprocessing import Pool, cpu_count
+import shutil
+import numpy as np
 from algorithm import *
 from astar import astr
 from dfs import dfs
 from bfs import bfs
-import shutil
-import numpy as np
 
 SIZE_HEIGHT = 4
 SIZE_WIDTH = 4
@@ -107,15 +106,60 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
             path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
         save_solved(path, file_solved)
         save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
+        return True, file_solved
     except Exception as e:
         print(f"Błąd podczas rozwiązywania {file_shuffled}: {e}")
+        return False, file_shuffled
 
 
-def generate_files_for_params(acronym):
-    ranges = [0, 2, 6, 16, 40, 94, 201, 413]
+def process_single_file(args):
+    """
+    Funkcja do przetwarzania pojedynczego pliku w puli wątków.
+    """
+    acronym, parametr, level_folder, index = args
+
+    path = generate_path(level_folder, index)
+    path_solved = generate_path_solved(acronym, parametr, level_folder, index)
+    path_addons = generate_path_addons(acronym, parametr, level_folder, index)
+
+    file_shuffled = path + ".txt"
+    file_solved = path_solved + "_solved.txt"
+    file_addons = path_addons + "_addons.txt"
+
+    if os.path.exists(file_shuffled):
+        result = solve(acronym, parametr, file_shuffled, file_solved, file_addons)
+        return result
+    else:
+        return False, f"Brak pliku: {file_shuffled}"
+
+
+def generate_path(y, x):
+    path = f"puzzles/start/4x4_{y:02d}_{x:05d}"
+    return path
+
+
+def generate_path_solved(acronym, parametr, y, x):
+    path = f"puzzles/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
+    return path
+
+
+def generate_path_addons(acronym, parametr, y, x):
+    path = f"puzzles/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
+    return path
+
+
+def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
+    acronyms = ["bfs", "dfs"]
+    base_path = "puzzles"
+    ranges = [0, 2, 6, 16, 40, 94, 201, 413]
 
-    if acronym in ["bfs", "dfs"]:
+    # Tworzy strukturę folderów przed rozpoczęciem
+    create_folder_structure(base_path, acronyms, tab_parameter)
+
+    # Przygotowanie listy wszystkich zadań do wykonania
+    all_tasks = []
+    for acronym in acronyms:
         for parametr in tab_parameter:
             for level in range(7):  # Poziomy od 0 do 6
                 for i in range(ranges[level], ranges[level + 1]):
@@ -141,57 +185,20 @@ def generate_files_for_params(acronym):
                         level_folder = 7
                         index = i + 1 - 201
 
-                    path = generate_path(level_folder, index)
-                    path_solved = generate_path_solved(acronym, parametr, level_folder, index)
-                    path_addons = generate_path_addons(acronym, parametr, level_folder, index)
-
-                    file_shuffled = path + ".txt"
-                    file_solved = path_solved + "_solved.txt"
-                    file_addons = path_addons + "_addons.txt"
-
-                    if os.path.exists(file_shuffled):
-                        solve(acronym, parametr, file_shuffled, file_solved, file_addons)
-                        print(f"Rozwiązano: {file_solved}")
-                    else:
-                        print(f"Brak pliku: {file_shuffled}")
-    else:
-        print(f"Nieznany algorytm: {acronym}")
-
-
-def generate_path(y, x):
-    path = f"puzzles/start/4x4_{y:02d}_{x:05d}"
-    return path
-
-
-def generate_path_solved(acronym, parametr, y, x):
-    path = f"puzzles/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
-    return path
-
-
-def generate_path_addons(acronym, parametr, y, x):
-    path = f"puzzles/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
-    return path
-
-
-def main():
-    tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
-    acronyms = ["bfs", "dfs"]
-    base_path = "puzzles"
-
-    # Tworzy strukturę folderów przed rozpoczęciem
-    create_folder_structure(base_path, acronyms, tab_parameter)
+                    all_tasks.append((acronym, parametr, level_folder, index))
 
     # Ustawienie ilości wątków
-    num_workers = multiprocessing.cpu_count()  # Możesz to zmienić na multiprocessing.cpu_count() jeśli chcesz użyć wszystkich dostępnych rdzeni
-    print(f"Używanie {num_workers} wątków do przetwarzania")
+    num_workers = multiprocessing.cpu_count()
+    print(f"Używanie {num_workers} wątków do przetwarzania {len(all_tasks)} zadań")
 
-    # Wykorzystanie concurrent.futures zamiast multiprocessing.Pool
+    # Przetwarzanie wszystkich zadań równolegle
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
-        futures = [
-            executor.submit(generate_files_for_params, acronym)
-            for acronym in acronyms
-        ]
-        concurrent.futures.wait(futures)
+        results = list(executor.map(process_single_file, all_tasks))
+
+    # Podsumowanie wyników
+    success_count = sum(1 for r in results if r[0])
+    failure_count = len(results) - success_count
+    print(f"Zakończono przetwarzanie. Sukcesy: {success_count}, Niepowodzenia: {failure_count}")
 
 
 if __name__ == "__main__":
