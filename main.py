@@ -1,4 +1,5 @@
 import concurrent.futures
+import multiprocessing
 import random
 import os
 from os.path import basename
@@ -181,7 +182,7 @@ def main():
     create_folder_structure(base_path, acronyms, tab_parameter)
 
     # Ustawienie ilości wątków
-    num_workers = 12  # Możesz to zmienić na multiprocessing.cpu_count() jeśli chcesz użyć wszystkich dostępnych rdzeni
+    num_workers = multiprocessing.cpu_count()  # Możesz to zmienić na multiprocessing.cpu_count() jeśli chcesz użyć wszystkich dostępnych rdzeni
     print(f"Używanie {num_workers} wątków do przetwarzania")
 
     # Wykorzystanie concurrent.futures zamiast multiprocessing.Pool
