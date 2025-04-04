@@ -8,27 +8,49 @@ from astar import astr
 from dfs import dfs
 from bfs import bfs
 import shutil
-import os
+import numpy as np
 
 SIZE_HEIGHT = 4
 SIZE_WIDTH = 4
 
 
-def clear_folders(base_path, acronyms, parameters):
+def create_folder_structure(base_path, acronyms, parameters):
     """
-    Usuwa i ponownie tworzy foldery przed startem programu.
+    Tworzy strukturę folderów dla wszystkich algorytmów i parametrów.
+    Jeśli foldery już istnieją, usuwa je i tworzy nowe.
     """
-    for acronym in acronyms:
-        for param in parameters:
-            solved_path = f"{base_path}/{acronym}/{param}/solved"
-            addons_path = f"{base_path}/{acronym}/{param}/addons"
+    # Najpierw upewnij się, że istnieje folder bazowy
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
 
+    for acronym in acronyms:
+        # Upewnij się, że istnieje folder dla danego algorytmu
+        algorithm_path = f"{base_path}/{acronym}"
+        if not os.path.exists(algorithm_path):
+            os.makedirs(algorithm_path)
+
+        # Upewnij się, że istnieje folder start dla danego algorytmu
+        start_path = f"{algorithm_path}/start"
+        if not os.path.exists(start_path):
+            os.makedirs(start_path)
+
+        for param in parameters:
+            # Ścieżka do folderu parametru
+            param_path = f"{algorithm_path}/{param}"
+            if not os.path.exists(param_path):
+                os.makedirs(param_path)
+
+            # Ścieżki do podfolderów
+            solved_path = f"{param_path}/solved"
+            addons_path = f"{param_path}/addons"
+
+            # Usuń i utwórz podfoldery
             for folder in [solved_path, addons_path]:
                 if os.path.exists(folder):
                     shutil.rmtree(folder)  # Usuwa folder i jego zawartość
                 os.makedirs(folder)  # Tworzy pusty folder
 
-            print(f"Wyczyszczono foldery dla {acronym} - {param}")
+            print(f"Utworzono strukturę folderów dla {acronym} - {param}")
 
 
 def read_board(filename):
@@ -67,97 +89,107 @@ def save_addons(solved, file_name, visited, processed, max_depth, time):
 
 
 def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
-    puzzle = read_board(file_shuffled)
-    if acronym == "bfs":
-        path, visited_states, processed_states, max_depth, timer = bfs(puzzle, parametr)
-    elif acronym == "dfs":
-        path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
-        if path is None:
-            print("lipa")
-    elif acronym == "astr":
-        path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
-    save_solved(path, file_solved)
-    save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
+    # Upewnij się, że folder docelowy istnieje
+    os.makedirs(os.path.dirname(file_solved), exist_ok=True)
+    os.makedirs(os.path.dirname(file_addons), exist_ok=True)
+
+    try:
+        puzzle = read_board(file_shuffled)
+        if acronym == "bfs":
+            path, visited_states, processed_states, max_depth, timer = bfs(puzzle, parametr)
+        elif acronym == "dfs":
+            path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
+            if path is None:
+                print(f"Nie znaleziono rozwiązania dla {file_shuffled}")
+        elif acronym == "astr":
+            path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
+        save_solved(path, file_solved)
+        save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
+    except Exception as e:
+        print(f"Błąd podczas rozwiązywania {file_shuffled}: {e}")
 
 
-def generate_files_for_params(acronym, parametr):
+def generate_files_for_params(acronym):
     ranges = [0, 2, 6, 16, 40, 94, 201, 413]
-    tab_parameter =  ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
+    tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
 
-    if acronym == "bfs" or acronym == "dfs":
-        for par in tab_parameter:
+    if acronym in ["bfs", "dfs"]:
+        for parametr in tab_parameter:
             for level in range(7):  # Poziomy od 0 do 6
                 for i in range(ranges[level], ranges[level + 1]):
                     if i < 2:
-                        path = generate_path(acronym, 1, i + 1)
-                        path_solved = generate_path_solved(acronym, parametr, 1, i + 1)
-                        path_addons = generate_path_addons(acronym, parametr, 1, i + 1)
+                        level_folder = 1
+                        index = i + 1
                     elif i < 6:
-                        path = generate_path(acronym, 2, i + 1 - 2)
-                        path_solved = generate_path_solved(acronym, parametr, 2, i + 1 - 2)
-                        path_addons = generate_path_addons(acronym, parametr, 2, i + 1 - 2)
+                        level_folder = 2
+                        index = i + 1 - 2
                     elif i < 16:
-                        path = generate_path(acronym, 3, i + 1 - 6)
-                        path_solved = generate_path_solved(acronym, parametr, 3, i + 1 - 6)
-                        path_addons = generate_path_addons(acronym, parametr, 3, i + 1 - 6)
+                        level_folder = 3
+                        index = i + 1 - 6
                     elif i < 40:
-                        path = generate_path(acronym, 4, i + 1 - 16)
-                        path_solved = generate_path_solved(acronym, parametr, 4, i + 1 - 16)
-                        path_addons = generate_path_addons(acronym, parametr, 4, i + 1 - 16)
+                        level_folder = 4
+                        index = i + 1 - 16
                     elif i < 94:
-                        path = generate_path(acronym, 5, i + 1 - 40)
-                        path_solved = generate_path_solved(acronym, parametr, 5, i + 1 - 40)
-                        path_addons = generate_path_addons(acronym, parametr, 5, i + 1 - 40)
+                        level_folder = 5
+                        index = i + 1 - 40
                     elif i < 201:
-                        path = generate_path(acronym, 6, i + 1 - 94)
-                        path_solved = generate_path_solved(acronym, parametr, 6, i + 1 - 94)
-                        path_addons = generate_path_addons(acronym, parametr, 6, i + 1 - 94)
+                        level_folder = 6
+                        index = i + 1 - 94
                     else:
-                        path = generate_path(acronym, 7, i + 1 - 201)
-                        path_solved = generate_path_solved(acronym, parametr, 7, i + 1 - 201)
-                        path_addons = generate_path_addons(acronym, parametr, 7, i + 1 - 201)
+                        level_folder = 7
+                        index = i + 1 - 201
+
+                    path = generate_path(level_folder, index)
+                    path_solved = generate_path_solved(acronym, parametr, level_folder, index)
+                    path_addons = generate_path_addons(acronym, parametr, level_folder, index)
 
                     file_shuffled = path + ".txt"
                     file_solved = path_solved + "_solved.txt"
                     file_addons = path_addons + "_addons.txt"
 
-                    solve(acronym, parametr, file_shuffled, file_solved, file_addons)
-                    print(path_solved)
+                    if os.path.exists(file_shuffled):
+                        solve(acronym, parametr, file_shuffled, file_solved, file_addons)
+                        print(f"Rozwiązano: {file_solved}")
+                    else:
+                        print(f"Brak pliku: {file_shuffled}")
     else:
-        print("Nieznany algorytm")
+        print(f"Nieznany algorytm: {acronym}")
 
 
-
-def generate_path(acronym, y, x):
-    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/start/4x4_{y:02d}_{x:05d}"
+def generate_path(y, x):
+    path = f"puzzles/start/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def generate_path_solved(acronym, parametr, y, x):
-    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
+    path = f"puzzles/{acronym}/{parametr}/solved/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def generate_path_addons(acronym, parametr, y, x):
-    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
+    path = f"puzzles/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}"
     return path
 
 
 def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
-    acronyms = ["bfs", "dfs"]
-    base_path = "C:/Users/mateu/Downloads/Puzzle"
+    acronyms = ["bfs", "dfs"]  # Dodano astr do listy
+    base_path = "puzzles"
 
-    # solve("dfs", "RDUL", "C:/Users/mateu/Downloads/Puzzle/dfs/start/4x4_07_00206.txt", "C:/Users/mateu/Downloads/Puzzle/dfs/test/4x4_07_00206_solved.txt", "C:/Users/mateu/Downloads/Puzzle/dfs/test/4x4_07_00206_addons.txt")
-    # Wyczyść foldery przed startem
-    clear_folders(base_path, acronyms, tab_parameter)
+    # Tworzy strukturę folderów przed rozpoczęciem
+    create_folder_structure(base_path, acronyms, tab_parameter)
 
+    # Pojedynczy test (odkomentuj w razie potrzeby)
+    # solve("dfs", "RDUL", "puzzles/dfs/start/4x4_01_00001.txt",
+    #      "puzzles/dfs/RDUL/solved/4x4_01_00001_solved.txt",
+    #      "puzzles/dfs/RDUL/addons/4x4_01_00001_addons.txt")
 
-
+    # Przetwarzanie równoległe
     num_workers = max(1, cpu_count() // 2)  # Używa połowy rdzeni
+    print(f"Używanie {num_workers} wątków do przetwarzania")
+
     with Pool(num_workers) as pool:
-        pool.starmap(generate_files_for_params,
-                     [(acronym, parametr) for acronym in acronyms for parametr in tab_parameter])
+        pool.map(generate_files_for_params, acronyms)
 
 
 if __name__ == "__main__":

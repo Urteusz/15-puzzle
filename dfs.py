@@ -62,15 +62,14 @@ def dfs(puzzle, search_order):
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)
 
-                if new_state not in visited or visited[new_state] > depth + 1:
-                    stack.append((new_state, depth + 1))  # Dodajemy stan z nową głębokością
-                    visited[new_state] = depth + 1
-                    visited_states += 1
-                    parent[new_state] = current_state
-                    move_direction[new_state] = direction
-                    max_reached_depth = max(max_reached_depth, depth + 1)
-
-
+                if depth + 1 <= max_depth:
+                    if new_state not in visited or visited[new_state] > depth + 1:
+                        stack.append((new_state, depth + 1))  # Dodajemy stan z nową głębokością
+                        visited[new_state] = depth + 1
+                        visited_states += 1
+                        parent[new_state] = current_state
+                        move_direction[new_state] = direction
+                        max_reached_depth = max(max_reached_depth, depth + 1)
 
     end_time = timeit.default_timer()
     execution_time = (end_time - start_time) * 1000

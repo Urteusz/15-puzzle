@@ -43,7 +43,7 @@ def generate_path_addons(acronym, parametr, y, x):
     """
     Generuje ścieżkę do pliku na podstawie podanych parametrów.
     """
-    path = f"C:/Users/mateu/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
+    path = f"C:/Users/Urteusz/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
     return path
 
 

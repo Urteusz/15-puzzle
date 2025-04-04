@@ -11,8 +11,6 @@ __pycache__/
 .Python
 puzzles/*
 !puzzles/start/
-puzzles/start/*
-!puzzles/start/.gitkeep
 
 
 build/
