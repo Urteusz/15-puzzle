@@ -1,5 +1,6 @@
 import timeit
 import numpy as np
+from functools import lru_cache
 
 EMPTY_TILE = 0
 
@@ -10,6 +11,11 @@ directions = {
             'U': (-1, 0),  # Góra
             'D': (1, 0)    # Dół
         }
+
+
+
+def puzzle_to_tuple(puzzle):
+    return tuple(tuple(row) for row in puzzle)
 
 def is_solvable(tiles):
     inv_count = 0
@@ -51,8 +57,6 @@ def swap(puzzle, i1, j1, i2, j2):
     return new_puzzle
 
 
-def puzzle_to_tuple(puzzle):
-    return tuple(tuple(row) for row in puzzle)
 
 
 

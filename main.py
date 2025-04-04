@@ -81,42 +81,51 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
 
 
 def generate_files_for_params(acronym, parametr):
-    for i in range(413):
-        if i < 2:
-            path = generate_path(acronym, 1, i + 1)
-            path_solved = generate_path_solved(acronym, parametr, 1, i + 1)
-            path_addons = generate_path_addons(acronym, parametr, 1, i + 1)
-        elif i < 6:
-            path = generate_path(acronym, 2, i + 1 - 2)
-            path_solved = generate_path_solved(acronym, parametr, 2, i + 1 - 2)
-            path_addons = generate_path_addons(acronym, parametr, 2, i + 1 - 2)
-        elif i < 16:
-            path = generate_path(acronym, 3, i + 1 - 6)
-            path_solved = generate_path_solved(acronym, parametr, 3, i + 1 - 6)
-            path_addons = generate_path_addons(acronym, parametr, 3, i + 1 - 6)
-        elif i < 40:
-            path = generate_path(acronym, 4, i + 1 - 16)
-            path_solved = generate_path_solved(acronym, parametr, 4, i + 1 - 16)
-            path_addons = generate_path_addons(acronym, parametr, 4, i + 1 - 16)
-        elif i < 94:
-            path = generate_path(acronym, 5, i + 1 - 40)
-            path_solved = generate_path_solved(acronym, parametr, 5, i + 1 - 40)
-            path_addons = generate_path_addons(acronym, parametr, 5, i + 1 - 40)
-        elif i < 201:
-            path = generate_path(acronym, 6, i + 1 - 94)
-            path_solved = generate_path_solved(acronym, parametr, 6, i + 1 - 94)
-            path_addons = generate_path_addons(acronym, parametr, 6, i + 1 - 94)
-        else:
-            path = generate_path(acronym, 7, i + 1 - 201)
-            path_solved = generate_path_solved(acronym, parametr, 7, i + 1 - 201)
-            path_addons = generate_path_addons(acronym, parametr, 7, i + 1 - 201)
+    ranges = [0, 2, 6, 16, 40, 94, 201, 413]
+    tab_parameter =  ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
 
-        file_shuffled = path + ".txt"
-        file_solved = path_solved + "_solved.txt"
-        file_addons = path_addons + "_addons.txt"
+    if acronym == "bfs" or acronym == "dfs":
+        for par in tab_parameter:
+            for level in range(7):  # Poziomy od 0 do 6
+                for i in range(ranges[level], ranges[level + 1]):
+                    if i < 2:
+                        path = generate_path(acronym, 1, i + 1)
+                        path_solved = generate_path_solved(acronym, parametr, 1, i + 1)
+                        path_addons = generate_path_addons(acronym, parametr, 1, i + 1)
+                    elif i < 6:
+                        path = generate_path(acronym, 2, i + 1 - 2)
+                        path_solved = generate_path_solved(acronym, parametr, 2, i + 1 - 2)
+                        path_addons = generate_path_addons(acronym, parametr, 2, i + 1 - 2)
+                    elif i < 16:
+                        path = generate_path(acronym, 3, i + 1 - 6)
+                        path_solved = generate_path_solved(acronym, parametr, 3, i + 1 - 6)
+                        path_addons = generate_path_addons(acronym, parametr, 3, i + 1 - 6)
+                    elif i < 40:
+                        path = generate_path(acronym, 4, i + 1 - 16)
+                        path_solved = generate_path_solved(acronym, parametr, 4, i + 1 - 16)
+                        path_addons = generate_path_addons(acronym, parametr, 4, i + 1 - 16)
+                    elif i < 94:
+                        path = generate_path(acronym, 5, i + 1 - 40)
+                        path_solved = generate_path_solved(acronym, parametr, 5, i + 1 - 40)
+                        path_addons = generate_path_addons(acronym, parametr, 5, i + 1 - 40)
+                    elif i < 201:
+                        path = generate_path(acronym, 6, i + 1 - 94)
+                        path_solved = generate_path_solved(acronym, parametr, 6, i + 1 - 94)
+                        path_addons = generate_path_addons(acronym, parametr, 6, i + 1 - 94)
+                    else:
+                        path = generate_path(acronym, 7, i + 1 - 201)
+                        path_solved = generate_path_solved(acronym, parametr, 7, i + 1 - 201)
+                        path_addons = generate_path_addons(acronym, parametr, 7, i + 1 - 201)
 
-        solve(acronym, parametr, file_shuffled, file_solved, file_addons)
-        print(path_solved)
+                    file_shuffled = path + ".txt"
+                    file_solved = path_solved + "_solved.txt"
+                    file_addons = path_addons + "_addons.txt"
+
+                    solve(acronym, parametr, file_shuffled, file_solved, file_addons)
+                    print(path_solved)
+    else:
+        print("Nieznany algorytm")
+
 
 
 def generate_path(acronym, y, x):
