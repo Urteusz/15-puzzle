@@ -1,85 +1,82 @@
-from algorithm import *
-
-max_depth = 20
+import timeit
+import numpy as np
+from algorithm import directions
 
 def dfs(puzzle, search_order):
     start_time = timeit.default_timer()
+    # Reverse search order for stack operations
     search_order = search_order[::-1]
     height, width = puzzle.shape
 
-    initial_state = puzzle_to_tuple(puzzle)
+    # Find zero position in initial state
+    zero_pos = None
+    for i in range(height):
+        for j in range(width):
+            if puzzle[i, j] == 0:
+                zero_pos = (i, j)
+                break
+        if zero_pos:
+            break
 
-    # Stos przechowujący (stan, głębokość)
-    stack = [(initial_state, 0)]  # Pierwszy stan z głębokością 0
+    # Convert initial puzzle to tuple for hashing
+    initial_state = tuple(map(tuple, puzzle))
 
-    # Słownik do śledzenia odwiedzonych stanów
+    # Target state (goal)
+    goal_array = np.reshape(np.array(list(range(1, width * height)) + [0]), (height, width))
+    target_state = tuple(map(tuple, goal_array))
+
+    # Track visited states with their depth
     visited = {initial_state: 0}
 
-    # Słownik do śledzenia ścieżki (poprzedników i wykonanych ruchów)
-    parent = {initial_state: None}
-    move_direction = {initial_state: None}
+    # Stack for DFS with (state, path, depth, zero_position)
+    stack = [(initial_state, [], 0, zero_pos)]
 
-    # Stan docelowy
-    target = matrix(width, height, list(range(1, width * height)) + [0])
-    target = puzzle_to_tuple(target)
-
-    # Liczniki do statystyk
+    # Statistics
     visited_states = 1
     processed_states = 0
     max_reached_depth = 0
 
+    # Maximum depth to explore
+    max_depth = 20
+
     while stack:
-        current_state, depth = stack.pop()  # Pobieramy stan i głębokość
+        current_state, path, depth, zero_pos = stack.pop()
         processed_states += 1
 
-        # Jeśli osiągnięto maksymalną głębokość, wykonujemy nawrót (backtracking)
-        if depth >= max_depth:
-            continue  # Pomijamy dalsze przetwarzanie tego stanu
+        # Update max depth reached
+        max_reached_depth = max(max_reached_depth, depth)
 
-        current_puzzle = np.array(current_state)
-
-        if current_state == target:
-            path = []
-            state = current_state
-            while move_direction[state] is not None:
-                path.append(move_direction[state])
-                state = parent[state]
-            path.reverse()
-
-            solution_depth = len(path)
-            max_reached_depth = max(max_reached_depth, solution_depth)
-
+        # Check if goal is reached
+        if current_state == target_state:
             end_time = timeit.default_timer()
             execution_time = (end_time - start_time) * 1000
             return path, visited_states, processed_states, max_reached_depth, execution_time
 
-        i, j = find_zero(current_puzzle)
+        # Skip if max depth reached
+        if depth >= max_depth:
+            continue
 
+        i, j = zero_pos
+
+        # Try each direction according to search order
         for direction in search_order:
-            if can_move(current_puzzle, direction):
-                di, dj = directions[direction]
-                ni, nj = i + di, j + dj
-                new_puzzle = swap(current_puzzle, i, j, ni, nj)
-                new_state = puzzle_to_tuple(new_puzzle)
+            di, dj = directions[direction]
+            ni, nj = i + di, j + dj
 
-                if depth + 1 <= max_depth:
-                    if new_state not in visited or visited[new_state] > depth + 1:
-                        stack.append((new_state, depth + 1))  # Dodajemy stan z nową głębokością
-                        visited[new_state] = depth + 1
-                        visited_states += 1
-                        parent[new_state] = current_state
-                        move_direction[new_state] = direction
-                        max_reached_depth = max(max_reached_depth, depth + 1)
+            # Check if the move is valid
+            if 0 <= ni < height and 0 <= nj < width:
+                # Create new state by swapping
+                new_state = [list(row) for row in current_state]
+                new_state[i][j], new_state[ni][nj] = new_state[ni][nj], new_state[i][j]
+                new_state_tuple = tuple(map(tuple, new_state))
 
+                # Check if this state hasn't been visited before or has been visited at a deeper level
+                if new_state_tuple not in visited or visited[new_state_tuple] > depth + 1:
+                    visited[new_state_tuple] = depth + 1
+                    visited_states += 1
+                    stack.append((new_state_tuple, path + [direction], depth + 1, (ni, nj)))
+
+    # No solution found
     end_time = timeit.default_timer()
     execution_time = (end_time - start_time) * 1000
     return None, visited_states, processed_states, max_reached_depth, execution_time
-
-
-def can_move(puzzle, direction):
-    i, j = find_zero(puzzle)
-    di, dj = directions[direction]
-    ni, nj = i + di, j + dj
-    if ni < 0 or ni >= puzzle.shape[0] or nj < 0 or nj >= puzzle.shape[1]:
-        return False
-    return True

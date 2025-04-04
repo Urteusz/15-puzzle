@@ -16,7 +16,7 @@ def addons_opener(acronym, choose, subcategories=None):
     for par in tab_parameter:
         for level in range(7):  # Poziomy od 0 do 6
             for i in range(ranges[level], ranges[level + 1]):
-                path = generate_path_addons(acronym, par, level + 1, i - ranges[level] + 1)
+                path = generate_path_addons(acronym, par, level + 1, i - ranges[level] + 1) + "_addons.txt"
                 try:
                     with open(path) as file:
                         lines = file.readlines()
@@ -73,7 +73,7 @@ def main():
         "Długość znalezionego rozwiązania",
         "Liczba stanów odwiedzonych",
         "Liczba stanów przetworzonych",
-        "Maksymalna osiągnięta głębokość rekursji",
+        "Maksymalna osiągnięta głębokość",
         "Czas trwania procesu obliczeniowego"
     ]
 
