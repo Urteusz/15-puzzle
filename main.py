@@ -1,3 +1,4 @@
+import concurrent.futures
 import random
 import os
 from os.path import basename
@@ -173,23 +174,23 @@ def generate_path_addons(acronym, parametr, y, x):
 
 def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
-    acronyms = ["bfs", "dfs"]  # Dodano astr do listy
+    acronyms = ["bfs", "dfs"]
     base_path = "puzzles"
 
     # Tworzy strukturę folderów przed rozpoczęciem
     create_folder_structure(base_path, acronyms, tab_parameter)
 
-    # Pojedynczy test (odkomentuj w razie potrzeby)
-    # solve("dfs", "RDUL", "puzzles/dfs/start/4x4_01_00001.txt",
-    #      "puzzles/dfs/RDUL/solved/4x4_01_00001_solved.txt",
-    #      "puzzles/dfs/RDUL/addons/4x4_01_00001_addons.txt")
-
-    # Przetwarzanie równoległe
-    num_workers = max(1, cpu_count() // 2)  # Używa połowy rdzeni
+    # Ustawienie ilości wątków
+    num_workers = 12  # Możesz to zmienić na multiprocessing.cpu_count() jeśli chcesz użyć wszystkich dostępnych rdzeni
     print(f"Używanie {num_workers} wątków do przetwarzania")
 
-    with Pool(num_workers) as pool:
-        pool.map(generate_files_for_params, acronyms)
+    # Wykorzystanie concurrent.futures zamiast multiprocessing.Pool
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = [
+            executor.submit(generate_files_for_params, acronym)
+            for acronym in acronyms
+        ]
+        concurrent.futures.wait(futures)
 
 
 if __name__ == "__main__":

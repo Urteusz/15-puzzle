@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
+from main import generate_path_addons
 
 
 def addons_opener(acronym, choose, subcategories=None):
@@ -37,14 +38,6 @@ def addons_opener(acronym, choose, subcategories=None):
                 averages_per_order[par][level] /= counts_per_order[par][level]
 
     return averages_per_order, countError
-
-
-def generate_path_addons(acronym, parametr, y, x):
-    """
-    Generuje ścieżkę do pliku na podstawie podanych parametrów.
-    """
-    path = f"C:/Users/Urteusz/Downloads/Puzzle/{acronym}/{parametr}/addons/4x4_{y:02d}_{x:05d}_addons.txt"
-    return path
 
 
 def rysuj_wykres_słupkowy(averages_dict, title, alogorithm):
