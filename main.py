@@ -6,6 +6,7 @@ from os.path import basename
 import re
 import shutil
 import numpy as np
+import time
 from algorithm import *
 from astar import astr
 from dfs import dfs
@@ -106,7 +107,7 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
             path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
         save_solved(path, file_solved)
         save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
-        return True, file_solved
+        return True, file_shuffled
     except Exception as e:
         print(f"Błąd podczas rozwiązywania {file_shuffled}: {e}")
         return False, file_shuffled
@@ -116,7 +117,7 @@ def process_single_file(args):
     """
     Funkcja do przetwarzania pojedynczego pliku w puli wątków.
     """
-    acronym, parametr, level_folder, index = args
+    acronym, parametr, level_folder, index, task_id, total_tasks = args
 
     path = generate_path(level_folder, index)
     path_solved = generate_path_solved(acronym, parametr, level_folder, index)
@@ -128,9 +129,9 @@ def process_single_file(args):
 
     if os.path.exists(file_shuffled):
         result = solve(acronym, parametr, file_shuffled, file_solved, file_addons)
-        return result
+        return result, task_id, total_tasks
     else:
-        return False, f"Brak pliku: {file_shuffled}"
+        return (False, f"Brak pliku: {file_shuffled}"), task_id, total_tasks
 
 
 def generate_path(y, x):
@@ -148,6 +149,16 @@ def generate_path_addons(acronym, parametr, y, x):
     return path
 
 
+# Funkcja do wyświetlania paska postępu
+def print_progress_bar(completed, total, length=50):
+    progress = completed / total
+    bar = '█' * int(length * progress) + '-' * (length - int(length * progress))
+    percent = int(progress * 100)
+    print(f'\r[{bar}] {percent}% ({completed}/{total}) ukończono', end='')
+    if completed == total:
+        print()
+
+
 def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
     acronyms = ["bfs", "dfs"]
@@ -159,6 +170,15 @@ def main():
 
     # Przygotowanie listy wszystkich zadań do wykonania
     all_tasks = []
+    task_id = 0
+    total_tasks = 0
+
+    # Obliczenie całkowitej liczby zadań
+    for acronym in acronyms:
+        for parametr in tab_parameter:
+            for level in range(7):  # Poziomy od 0 do 6
+                total_tasks += ranges[level + 1] - ranges[level]
+
     for acronym in acronyms:
         for parametr in tab_parameter:
             for level in range(7):  # Poziomy od 0 do 6
@@ -185,19 +205,49 @@ def main():
                         level_folder = 7
                         index = i + 1 - 201
 
-                    all_tasks.append((acronym, parametr, level_folder, index))
+                    all_tasks.append((acronym, parametr, level_folder, index, task_id, total_tasks))
+                    task_id += 1
 
     # Ustawienie ilości wątków
     num_workers = multiprocessing.cpu_count()
     print(f"Używanie {num_workers} wątków do przetwarzania {len(all_tasks)} zadań")
 
-    # Przetwarzanie wszystkich zadań równolegle
+    # Inicjalizacja licznika ukończonych zadań
+    completed_tasks = 0
+    progress_update_interval = max(1, total_tasks // 100)  # Aktualizacja co 1% zadań
+    success_count = 0
+    failure_count = 0
+
+    # Wyświetl początkowy pasek postępu
+    print_progress_bar(completed_tasks, total_tasks)
+
+    # Ostatnia aktualizacja czasu
+    last_update_time = time.time()
+    update_interval = 1.0  # Aktualizacja co sekundę
+
+    # Przetwarzanie wszystkich zadań równolegle z monitorowaniem postępu
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
-        results = list(executor.map(process_single_file, all_tasks))
+        futures = [executor.submit(process_single_file, task) for task in all_tasks]
+
+        for future in concurrent.futures.as_completed(futures):
+            result, task_id, total = future.result()
+            completed_tasks += 1
+
+            if result[0]:
+                success_count += 1
+            else:
+                failure_count += 1
+
+            # Aktualizuj pasek postępu co określony interwał czasowy
+            current_time = time.time()
+            if current_time - last_update_time >= update_interval:
+                print_progress_bar(completed_tasks, total_tasks)
+                last_update_time = current_time
+
+    # Końcowe wyświetlenie paska postępu
+    print_progress_bar(completed_tasks, total_tasks)
 
     # Podsumowanie wyników
-    success_count = sum(1 for r in results if r[0])
-    failure_count = len(results) - success_count
     print(f"Zakończono przetwarzanie. Sukcesy: {success_count}, Niepowodzenia: {failure_count}")
 
 
