@@ -1,8 +1,5 @@
 import numpy as np
 
-EMPTY_TILE = 0
-
-
 directions = {
             'L': (0, -1),  # Lewo
             'R': (0, 1),   # Prawo
@@ -13,15 +10,15 @@ directions = {
 
 
 def puzzle_to_tuple(puzzle):
-    return tuple(tuple(row) for row in puzzle)
+    return tuple(map(tuple, puzzle))
 
 def is_solvable(tiles):
     inv_count = 0
     for i in range(len(tiles)):
-        if tiles[i] == EMPTY_TILE:
+        if tiles[i] == 0:
             continue
         for j in range(i + 1, len(tiles)):
-            if tiles[j] != EMPTY_TILE and tiles[i] > tiles[j]:
+            if tiles[j] != 0 and tiles[i] > tiles[j]:
                 inv_count += 1
     return inv_count % 2 == 0
 

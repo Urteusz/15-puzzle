@@ -1,6 +1,6 @@
 import timeit
 import numpy as np
-from algorithm import directions
+from algorithm import directions, swap, puzzle_to_tuple, find_zero
 
 
 def dfs(puzzle, search_order):
@@ -21,21 +21,14 @@ def dfs(puzzle, search_order):
     height, width = puzzle.shape
 
     # Znajdujemy pozycję zera (pustego pola) w początkowym stanie
-    zero_pos = None
-    for i in range(height):
-        for j in range(width):
-            if puzzle[i, j] == 0:
-                zero_pos = (i, j)
-                break
-        if zero_pos:
-            break
+    zero_pos = find_zero(puzzle)
 
     # Konwertujemy początkową układankę na krotkę dla możliwości haszowania
-    initial_state = tuple(map(tuple, puzzle))
+    initial_state = puzzle_to_tuple(puzzle)
 
     # Stan docelowy (ułożona układanka)
     goal_array = np.reshape(np.array(list(range(1, width * height)) + [0]), (height, width))
-    target_state = tuple(map(tuple, goal_array))
+    target_state = puzzle_to_tuple(goal_array)
 
     # Śledzimy odwiedzone stany wraz z ich głębokością
     visited = {initial_state: 0}
@@ -78,10 +71,10 @@ def dfs(puzzle, search_order):
 
             # Sprawdzamy czy ruch jest dozwolony (w granicach planszy)
             if 0 <= ni < height and 0 <= nj < width:
-                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem
+                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem (bez uzycia swap bo zbyt obciaza
                 new_state = [list(row) for row in current_state]
                 new_state[i][j], new_state[ni][nj] = new_state[ni][nj], new_state[i][j]
-                new_state_tuple = tuple(map(tuple, new_state))
+                new_state_tuple = puzzle_to_tuple(new_state)
 
                 # Dodajemy stan do eksploracji, jeśli nie był wcześniej odwiedzony lub był odwiedzony na większej głębokości
                 if new_state_tuple not in visited or visited[new_state_tuple] > depth + 1:
