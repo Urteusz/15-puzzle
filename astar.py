@@ -1,5 +1,9 @@
-from algorithm import *
+import timeit
 import heapq
+
+import numpy as np
+
+from algorithm import directions, matrix, swap, find_zero, puzzle_to_tuple
 
 def manhattan_distance(puzzle):
     height, width = len(puzzle), len(puzzle[0])

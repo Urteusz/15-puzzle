@@ -2,13 +2,25 @@ import timeit
 import numpy as np
 from algorithm import directions
 
+
 def dfs(puzzle, search_order):
+    """
+    Implementacja algorytmu przeszukiwania w głąb (DFS) dla rozwiązania układanki przesuwnej.
+
+    Parametry:
+    puzzle (numpy.ndarray): Początkowy stan układanki jako tablica 2D
+    search_order (list): Kolejność przeszukiwania kierunków (np. ['U', 'R', 'D', 'L'])
+
+    Zwraca:
+    tuple: (ścieżka rozwiązania, liczba odwiedzonych stanów, liczba przetworzonych stanów,
+           maksymalna osiągnięta głębokość, czas wykonania w ms)
+    """
     start_time = timeit.default_timer()
-    # Reverse search order for stack operations
+    # Odwracamy kolejność przeszukiwania dla operacji na stosie (LIFO)
     search_order = search_order[::-1]
     height, width = puzzle.shape
 
-    # Find zero position in initial state
+    # Znajdujemy pozycję zera (pustego pola) w początkowym stanie
     zero_pos = None
     for i in range(height):
         for j in range(width):
@@ -18,65 +30,66 @@ def dfs(puzzle, search_order):
         if zero_pos:
             break
 
-    # Convert initial puzzle to tuple for hashing
+    # Konwertujemy początkową układankę na krotkę dla możliwości haszowania
     initial_state = tuple(map(tuple, puzzle))
 
-    # Target state (goal)
+    # Stan docelowy (ułożona układanka)
     goal_array = np.reshape(np.array(list(range(1, width * height)) + [0]), (height, width))
     target_state = tuple(map(tuple, goal_array))
 
-    # Track visited states with their depth
+    # Śledzimy odwiedzone stany wraz z ich głębokością
     visited = {initial_state: 0}
 
-    # Stack for DFS with (state, path, depth, zero_position)
+    # Stos dla DFS przechowujący (stan, ścieżka, głębokość, pozycja_zera)
     stack = [(initial_state, [], 0, zero_pos)]
 
-    # Statistics
-    visited_states = 1
+    # Statystyki algorytmu
+    visited_states = 1  # Liczymy stan początkowy
     processed_states = 0
     max_reached_depth = 0
 
-    # Maximum depth to explore
+    # Maksymalna głębokość do przeszukania (zapobiega nieskończonym pętlom)
     max_depth = 20
 
     while stack:
+        # Pobieramy stan ze stosu (LIFO)
         current_state, path, depth, zero_pos = stack.pop()
         processed_states += 1
 
-        # Update max depth reached
+        # Aktualizujemy maksymalną osiągniętą głębokość
         max_reached_depth = max(max_reached_depth, depth)
 
-        # Check if goal is reached
+        # Sprawdzamy czy osiągnęliśmy stan docelowy
         if current_state == target_state:
             end_time = timeit.default_timer()
-            execution_time = (end_time - start_time) * 1000
+            execution_time = (end_time - start_time) * 1000  # Konwersja na milisekundy
             return path, visited_states, processed_states, max_reached_depth, execution_time
 
-        # Skip if max depth reached
+        # Pomijamy stany na maksymalnej głębokości
         if depth >= max_depth:
             continue
 
-        i, j = zero_pos
+        i, j = zero_pos  # Aktualna pozycja zera
 
-        # Try each direction according to search order
+        # Sprawdzamy każdy możliwy ruch według ustalonej kolejności
         for direction in search_order:
-            di, dj = directions[direction]
-            ni, nj = i + di, j + dj
+            di, dj = directions[direction]  # Pobieramy zmianę współrzędnych dla danego kierunku
+            ni, nj = i + di, j + dj  # Nowa pozycja zera po wykonaniu ruchu
 
-            # Check if the move is valid
+            # Sprawdzamy czy ruch jest dozwolony (w granicach planszy)
             if 0 <= ni < height and 0 <= nj < width:
-                # Create new state by swapping
+                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem
                 new_state = [list(row) for row in current_state]
                 new_state[i][j], new_state[ni][nj] = new_state[ni][nj], new_state[i][j]
                 new_state_tuple = tuple(map(tuple, new_state))
 
-                # Check if this state hasn't been visited before or has been visited at a deeper level
+                # Dodajemy stan do eksploracji, jeśli nie był wcześniej odwiedzony lub był odwiedzony na większej głębokości
                 if new_state_tuple not in visited or visited[new_state_tuple] > depth + 1:
                     visited[new_state_tuple] = depth + 1
                     visited_states += 1
                     stack.append((new_state_tuple, path + [direction], depth + 1, (ni, nj)))
 
-    # No solution found
+    # Jeśli nie znaleziono rozwiązania
     end_time = timeit.default_timer()
     execution_time = (end_time - start_time) * 1000
     return None, visited_states, processed_states, max_reached_depth, execution_time

@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
-from main import generate_path_addons
+from createFiles import generate_path_addons
 import matplotlib.pyplot as plt
 
 

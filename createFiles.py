@@ -1,12 +1,7 @@
 import concurrent.futures
 import multiprocessing
-import random
 import os
-from os.path import basename
-import re
 import shutil
-import numpy as np
-import time
 from algorithm import *
 from astar import astr
 from dfs import dfs
@@ -14,7 +9,6 @@ from bfs import bfs
 
 SIZE_HEIGHT = 4
 SIZE_WIDTH = 4
-
 
 def create_folder_structure(base_path, acronyms, parameters, heuristics):
     """

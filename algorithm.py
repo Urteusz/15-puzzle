@@ -1,6 +1,4 @@
-import timeit
 import numpy as np
-from functools import lru_cache
 
 EMPTY_TILE = 0
 
@@ -42,25 +40,8 @@ def find_zero(puzzle):
                 return i, j
     return None
 
-def get_neighbours(i, j, width, height):
-  moves = []
-  if i > 0: moves.append((i - 1, j))
-  if i < height - 1: moves.append((i + 1, j))
-  if j > 0: moves.append((i, j - 1))
-  if j < width - 1: moves.append((i, j + 1))
-  return moves
-
 
 def swap(puzzle, i1, j1, i2, j2):
     new_puzzle = np.copy(puzzle)
     new_puzzle[i1, j1], new_puzzle[i2, j2] = new_puzzle[i2, j2], new_puzzle[i1, j1]
     return new_puzzle
-
-
-
-
-
-
-
-
-
