@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 from main import generate_path_addons
+import matplotlib.pyplot as plt
+
 
 
 def addons_opener(acronym, choose, subcategories=None):
@@ -40,7 +42,7 @@ def addons_opener(acronym, choose, subcategories=None):
     return averages_per_order, countError
 
 
-def rysuj_wykres_słupkowy(averages_dict, title, alogorithm):
+def rysuj_wykres_słupkowy(averages_dict, title, algorithm, log_scale=False):
     """
     Tworzy wykres słupkowy z podziałem na poziomy i porządki przeszukiwania.
     """
@@ -49,22 +51,95 @@ def rysuj_wykres_słupkowy(averages_dict, title, alogorithm):
 
     plt.figure(figsize=(12, 8))
 
-
     for idx, (order, averages) in enumerate(averages_dict.items()):
         plt.bar(poziomy + idx * width - (len(averages_dict) / 2) * width,
                 averages,
                 width=width,
                 label=order)
 
-    plt.xlabel('Głębokość rozwiązania')
-    plt.ylabel(title)
-    plt.title(f'{alogorithm} - {title}')
+    plt.xlabel('Głębokość rozwiązania', fontsize=20)
+    plt.ylabel(title, fontsize=20)
+    plt.title(f'{algorithm}', fontsize=20)
     plt.xticks(poziomy)
 
-    plt.legend(title="Porządek przeszukiwania")
+    if log_scale:
+        plt.yscale('log')  # Ustawienie skali logarytmicznej
+
+    plt.legend(title="Porządek przeszukiwania", fontsize=14, ncol=2)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     plt.show()
+
+
+
+def rysuj_wykres_słupkowy_astar(averages_dict, title, log_scale=False):
+    """
+    Tworzy wykres słupkowy dla A* z podziałem na heurystyki.
+    """
+    poziomy = np.arange(1, 8)  # Poziomy od 1 do 7
+    width = 0.35  # Szerokość słupków
+
+    plt.figure(figsize=(12, 8))
+
+    heurystyki = list(averages_dict.keys())
+    for idx, heuristic in enumerate(heurystyki):
+        plt.bar(poziomy + idx * width - (len(heurystyki) / 2) * width,
+                averages_dict[heuristic],
+                width=width,
+                label=heuristic)
+
+    plt.xlabel('Głębokość rozwiązania', fontsize=20)
+    plt.ylabel(title, fontsize=20)
+    plt.title(f'A*', fontsize=20)
+    plt.xticks(poziomy)
+
+    if log_scale:
+        plt.yscale('log')  # Ustawienie skali logarytmicznej
+
+    plt.legend(title="Heurystyka", fontsize=14)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    plt.show()
+
+
+def rysuj_wykres_zbiorczy(bfs_averages, dfs_averages, astar_averages_combined, title, log_scale=False):
+    """
+    Tworzy zbiorczy wykres słupkowy dla BFS, DFS i A*.
+    """
+    poziomy = np.arange(1, 8)  # Głębokości rozwiązania (1 do 7)
+    width = 0.25  # Szerokość słupków
+
+    plt.figure(figsize=(12, 8))
+
+    # Obliczanie średnich wartości dla BFS i DFS
+    bfs_values = [np.mean([bfs_averages[order][level] for order in bfs_averages]) for level in range(7)]
+    dfs_values = [np.mean([dfs_averages[order][level] for order in dfs_averages]) for level in range(7)]
+
+    # Obliczanie średnich wartości dla A* (łącząc heurystyki)
+    astar_values = [
+        np.mean([astar_averages_combined[heuristic][level] for heuristic in astar_averages_combined])
+        for level in range(7)
+    ]
+
+    # Rysowanie słupków
+    plt.bar(poziomy - width, bfs_values, width=width, label="BFS")
+    plt.bar(poziomy, dfs_values, width=width, label="DFS")
+    plt.bar(poziomy + width, astar_values, width=width, label="A*")
+
+    plt.xlabel('Głębokość rozwiązania', fontsize=20)
+    plt.ylabel(title, fontsize=20)
+    plt.title(f'Ogółem', fontsize=20)
+    plt.xticks(poziomy)
+
+    if log_scale:
+        plt.yscale('log')  # Ustawienie skali logarytmicznej
+
+    plt.legend(title="Strategia", fontsize=14)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    plt.show()
+
+
 
 
 def main():
@@ -77,32 +152,44 @@ def main():
         "Czas trwania procesu obliczeniowego"
     ]
 
-    # Generowanie wykresów dla BFS
-    print("Wykresy dla BFS:")
+    # Kryteria wymagające skali logarytmicznej
+    kryteria_log = {
+        "Liczba stanów odwiedzonych",
+        "Liczba stanów przetworzonych",
+        "Czas trwania procesu obliczeniowego"
+    }
+
+    print("Generowanie wyników...")
+
     for i, kryterium in enumerate(kryteria):
+        log_scale = kryterium in kryteria_log
+
+        # BFS
         bfs_averages, errorBfs = addons_opener("bfs", choose=i + 1)
+        rysuj_wykres_słupkowy(bfs_averages, kryterium, "BFS", log_scale=log_scale)
 
-        # Wyświetlanie średnich dla każdego porządku na konsoli
-        print(f"\nKryterium: {kryterium}")
-        for order, averages in bfs_averages.items():
-            print(f"BFS ({order}) - średnie wartości: {averages}")
+        # DFS
+        dfs_averages, errorDfs = addons_opener("dfs", choose=i + 1)
+        rysuj_wykres_słupkowy(dfs_averages, kryterium, "DFS", log_scale=log_scale)
 
-        # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
-        rysuj_wykres_słupkowy(bfs_averages,  kryterium, "BFS")
+        # A*
+        heurystyki = ["manh", "hamm"]
+        astar_averages_combined = {}
+        for heuristic in heurystyki:
+            astar_averages, errorAstar = addons_opener("astr", choose=i + 1, subcategories=[heuristic])
+            astar_averages_combined[heuristic] = list(astar_averages[heuristic])
 
-    # Generowanie wykresów dla DFS
-    print("\nWykresy dla DFS:")
-    for i, kryterium in enumerate(kryteria):
-        dfs_averages,errorDfs = addons_opener("dfs", choose=i + 1)
+        rysuj_wykres_słupkowy_astar(astar_averages_combined, kryterium, log_scale=log_scale)
 
-        # Wyświetlanie średnich dla każdego porządku na konsoli
-        print(f"\nKryterium: {kryterium}")
-        for order, averages in dfs_averages.items():
-            print(f"DFS ({order}) - średnie wartości: {averages}")
+        # Zbiorczy wykres
+        rysuj_wykres_zbiorczy(bfs_averages, dfs_averages, astar_averages_combined, kryterium, log_scale=log_scale)
 
-        # Generowanie wykresu słupkowego z podziałem na porządki przeszukiwania
-        rysuj_wykres_słupkowy(dfs_averages, kryterium, "DFS")
-    print(f"\nLiczba błędów: BFS: {errorBfs} DFS: { errorDfs}")
+    print(f"\nLiczba błędów: BFS: {errorBfs}, DFS: {errorDfs}, A*: {errorAstar}")
+
+
+
 
 if __name__ == "__main__":
     main()
+
+

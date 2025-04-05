@@ -16,9 +16,9 @@ SIZE_HEIGHT = 4
 SIZE_WIDTH = 4
 
 
-def create_folder_structure(base_path, acronyms, parameters):
+def create_folder_structure(base_path, acronyms, parameters, heuristics):
     """
-    Tworzy strukturę folderów dla wszystkich algorytmów i parametrów.
+    Tworzy strukturę folderów dla wszystkich algorytmów i ich parametrów/heurystyk.
     Jeśli foldery już istnieją, usuwa je i tworzy nowe.
     """
     # Najpierw upewnij się, że istnieje folder bazowy
@@ -31,28 +31,44 @@ def create_folder_structure(base_path, acronyms, parameters):
         if not os.path.exists(algorithm_path):
             os.makedirs(algorithm_path)
 
-        # Upewnij się, że istnieje folder start dla danego algorytmu
-        start_path = f"{algorithm_path}/start"
-        if not os.path.exists(start_path):
-            os.makedirs(start_path)
+        # Dla BFS i DFS twórz foldery z porządkami przeszukiwania
+        if acronym in ["bfs", "dfs"]:
+            for param in parameters:
+                param_path = f"{algorithm_path}/{param}"
+                if not os.path.exists(param_path):
+                    os.makedirs(param_path)
 
-        for param in parameters:
-            # Ścieżka do folderu parametru
-            param_path = f"{algorithm_path}/{param}"
-            if not os.path.exists(param_path):
-                os.makedirs(param_path)
+                # Ścieżki do podfolderów
+                solved_path = f"{param_path}/solved"
+                addons_path = f"{param_path}/addons"
 
-            # Ścieżki do podfolderów
-            solved_path = f"{param_path}/solved"
-            addons_path = f"{param_path}/addons"
+                # Usuń i utwórz podfoldery
+                for folder in [solved_path, addons_path]:
+                    if os.path.exists(folder):
+                        shutil.rmtree(folder)  # Usuwa folder i jego zawartość
+                    os.makedirs(folder)  # Tworzy pusty folder
 
-            # Usuń i utwórz podfoldery
-            for folder in [solved_path, addons_path]:
-                if os.path.exists(folder):
-                    shutil.rmtree(folder)  # Usuwa folder i jego zawartość
-                os.makedirs(folder)  # Tworzy pusty folder
+                print(f"Utworzono strukturę folderów dla {acronym} - {param}")
 
-            print(f"Utworzono strukturę folderów dla {acronym} - {param}")
+        # Dla A* twórz foldery z heurystykami
+        elif acronym == "astr":
+            for heuristic in heuristics:
+                heuristic_path = f"{algorithm_path}/{heuristic}"
+                if not os.path.exists(heuristic_path):
+                    os.makedirs(heuristic_path)
+
+                # Ścieżki do podfolderów
+                solved_path = f"{heuristic_path}/solved"
+                addons_path = f"{heuristic_path}/addons"
+
+                # Usuń i utwórz podfoldery
+                for folder in [solved_path, addons_path]:
+                    if os.path.exists(folder):
+                        shutil.rmtree(folder)  # Usuwa folder i jego zawartość
+                    os.makedirs(folder)  # Tworzy pusty folder
+
+                print(f"Utworzono strukturę folderów dla {acronym} - {heuristic}")
+
 
 
 def read_board(filename):
@@ -104,13 +120,17 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
             if path is None:
                 print(f"Nie znaleziono rozwiązania dla {file_shuffled}")
         elif acronym == "astr":
+            # Dla A* parametr jest heurystyką
             path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
+        else:
+            raise ValueError(f"Nieznany algorytm: {acronym}")
         save_solved(path, file_solved)
         save_addons(path, file_addons, visited_states, processed_states, max_depth, timer)
         return True, file_shuffled
     except Exception as e:
         print(f"Błąd podczas rozwiązywania {file_shuffled}: {e}")
         return False, file_shuffled
+
 
 
 def process_single_file(args):
@@ -149,6 +169,7 @@ def generate_path_addons(acronym, parametr, y, x):
     return path
 
 
+
 # Funkcja do wyświetlania paska postępu
 def print_progress_bar(completed, total, length=50):
     progress = completed / total
@@ -161,69 +182,52 @@ def print_progress_bar(completed, total, length=50):
 
 def main():
     tab_parameter = ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
-    acronyms = ["bfs", "dfs"]
+    heuristics = ["manh", "hamm"]  # Heurystyki dla A*
+    acronyms = ["astr" , "bfs", "dfs"]  # Algorytmy do przetworzenia
     base_path = "puzzles"
     ranges = [0, 2, 6, 16, 40, 94, 201, 413]
 
-    # Tworzy strukturę folderów przed rozpoczęciem
-    create_folder_structure(base_path, acronyms, tab_parameter)
+    # Tworzenie struktury folderów
+    create_folder_structure(base_path, acronyms, tab_parameter, heuristics)
 
     # Przygotowanie listy wszystkich zadań do wykonania
     all_tasks = []
     task_id = 0
     total_tasks = 0
 
-    # Obliczenie całkowitej liczby zadań
+    # Generowanie zadań dla każdego algorytmu
     for acronym in acronyms:
-        for parametr in tab_parameter:
-            for level in range(7):  # Poziomy od 0 do 6
-                total_tasks += ranges[level + 1] - ranges[level]
+        if acronym in ["bfs", "dfs"]:
+            for parametr in tab_parameter:
+                for level in range(7):  # Poziomy od 0 do 6
+                    for i in range(ranges[level], ranges[level + 1]):
+                        level_folder = level + 1
+                        index = i - ranges[level] + 1
+                        all_tasks.append((acronym, parametr, level_folder, index, task_id, total_tasks))
+                        task_id += 1
+        elif acronym == "astr":
+            for heuristic in heuristics:  # Użyj heurystyk zamiast porządków przeszukiwania
+                for level in range(7):  # Poziomy od 0 do 6
+                    for i in range(ranges[level], ranges[level + 1]):
+                        level_folder = level + 1
+                        index = i - ranges[level] + 1
+                        all_tasks.append((acronym, heuristic, level_folder, index, task_id, total_tasks))
+                        task_id += 1
 
-    for acronym in acronyms:
-        for parametr in tab_parameter:
-            for level in range(7):  # Poziomy od 0 do 6
-                for i in range(ranges[level], ranges[level + 1]):
-                    if i < 2:
-                        level_folder = 1
-                        index = i + 1
-                    elif i < 6:
-                        level_folder = 2
-                        index = i + 1 - 2
-                    elif i < 16:
-                        level_folder = 3
-                        index = i + 1 - 6
-                    elif i < 40:
-                        level_folder = 4
-                        index = i + 1 - 16
-                    elif i < 94:
-                        level_folder = 5
-                        index = i + 1 - 40
-                    elif i < 201:
-                        level_folder = 6
-                        index = i + 1 - 94
-                    else:
-                        level_folder = 7
-                        index = i + 1 - 201
+    # Ustawienie liczby zadań do przetworzenia
+    total_tasks = len(all_tasks)
 
-                    all_tasks.append((acronym, parametr, level_folder, index, task_id, total_tasks))
-                    task_id += 1
-
-    # Ustawienie ilości wątków
+    # Ustawienie liczby wątków równoległych
     num_workers = multiprocessing.cpu_count()
-    print(f"Używanie {num_workers} wątków do przetwarzania {len(all_tasks)} zadań")
+    print(f"Używanie {num_workers} wątków do przetwarzania {total_tasks} zadań")
 
     # Inicjalizacja licznika ukończonych zadań
     completed_tasks = 0
-    progress_update_interval = max(1, total_tasks // 100)  # Aktualizacja co 1% zadań
     success_count = 0
     failure_count = 0
 
-    # Wyświetl początkowy pasek postępu
+    # Wyświetlenie początkowego paska postępu
     print_progress_bar(completed_tasks, total_tasks)
-
-    # Ostatnia aktualizacja czasu
-    last_update_time = time.time()
-    update_interval = 1.0  # Aktualizacja co sekundę
 
     # Przetwarzanie wszystkich zadań równolegle z monitorowaniem postępu
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
@@ -238,17 +242,12 @@ def main():
             else:
                 failure_count += 1
 
-            # Aktualizuj pasek postępu co określony interwał czasowy
-            current_time = time.time()
-            if current_time - last_update_time >= update_interval:
-                print_progress_bar(completed_tasks, total_tasks)
-                last_update_time = current_time
+            # Aktualizacja paska postępu po każdym zadaniu
+            print_progress_bar(completed_tasks, total_tasks)
 
-    # Końcowe wyświetlenie paska postępu
+    # Końcowe wyświetlenie paska postępu i podsumowanie wyników
     print_progress_bar(completed_tasks, total_tasks)
-
-    # Podsumowanie wyników
-    print(f"Zakończono przetwarzanie. Sukcesy: {success_count}, Niepowodzenia: {failure_count}")
+    print(f"\nZakończono przetwarzanie. Sukcesy: {success_count}, Niepowodzenia: {failure_count}")
 
 
 if __name__ == "__main__":
