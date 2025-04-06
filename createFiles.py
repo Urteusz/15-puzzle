@@ -7,8 +7,6 @@ from astar import astr
 from dfs import dfs
 from bfs import bfs
 
-SIZE_HEIGHT = 4
-SIZE_WIDTH = 4
 
 def create_folder_structure(base_path, acronyms, parameters, heuristics):
     """
@@ -65,20 +63,6 @@ def create_folder_structure(base_path, acronyms, parameters, heuristics):
 
 
 
-def read_board(filename):
-    with open(filename, 'r') as file:
-        lines = file.readlines()
-
-    SIZE_HEIGHT, SIZE_WIDTH = map(int, lines[0].split())
-    puzzle = np.array([list(map(int, line.split())) for line in lines[1:]])
-
-    return puzzle
-
-
-def print_board(tiles):
-    for i in range(SIZE_WIDTH):
-        for j in range(SIZE_HEIGHT):
-            print(tiles[SIZE_HEIGHT * i + j], end=' ')
 
 
 def save_solved(solved, file_name):
@@ -111,10 +95,7 @@ def solve(acronym, parametr, file_shuffled, file_solved, file_addons):
             path, visited_states, processed_states, max_depth, timer = bfs(puzzle, parametr)
         elif acronym == "dfs":
             path, visited_states, processed_states, max_depth, timer = dfs(puzzle, parametr)
-            if path is None:
-                print(f"Nie znaleziono rozwiązania dla {file_shuffled}")
         elif acronym == "astr":
-            # Dla A* parametr jest heurystyką
             path, visited_states, processed_states, max_depth, timer = astr(puzzle, parametr)
         else:
             raise ValueError(f"Nieznany algorytm: {acronym}")

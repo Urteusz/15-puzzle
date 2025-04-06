@@ -2,23 +2,12 @@ import timeit
 from collections import deque
 import numpy as np
 
-from algorithm import directions, matrix, swap, find_zero, puzzle_to_tuple
+from algorithm import directions, matrix, swap, find_zero, puzzle_to_tuple, SIZE_HEIGHT, SIZE_WIDTH
 
 
 def bfs(puzzle, search_order):
-    """
-    Implementacja algorytmu przeszukiwania wszerz (BFS) dla rozwiązania układanki przesuwnej.
 
-    Parametry:
-    puzzle (numpy.ndarray): Początkowy stan układanki jako tablica 2D
-    search_order (list): Kolejność przeszukiwania kierunków (np. ['U', 'R', 'D', 'L'])
-
-    Zwraca:
-    tuple: (ścieżka rozwiązania, liczba odwiedzonych stanów, liczba przetworzonych stanów,
-           maksymalna osiągnięta głębokość, czas wykonania w ms)
-    """
     start_time = timeit.default_timer()
-    height, width = puzzle.shape
 
     # Konwersja do krotki dla hashowania (umożliwia przechowywanie stanu w zbiorach i słownikach)
     initial_state = puzzle_to_tuple(puzzle)
@@ -34,7 +23,7 @@ def bfs(puzzle, search_order):
     move_direction = {initial_state: None}  # Kierunek ruchu prowadzący do aktualnego stanu
 
     # Stan docelowy - uporządkowane liczby od 1 do n-1 z zerem na końcu
-    target = matrix(width, height, list(range(1, width * height)) + [0])
+    target = matrix(SIZE_WIDTH, SIZE_HEIGHT, list(range(1, SIZE_WIDTH * SIZE_HEIGHT)) + [0])
     target = puzzle_to_tuple(target)
 
     # Liczniki do statystyk
@@ -76,7 +65,7 @@ def bfs(puzzle, search_order):
             ni, nj = i + di, j + dj  # Nowa pozycja zera po wykonaniu ruchu
 
             # Sprawdzamy czy ruch jest dozwolony (w granicach planszy)
-            if 0 <= ni < height and 0 <= nj < width:
+            if 0 <= ni < SIZE_HEIGHT and 0 <= nj < SIZE_WIDTH:
                 # Wykonujemy ruch - zamieniamy zero z sąsiednim elementem
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)

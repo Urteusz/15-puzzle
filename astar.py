@@ -3,36 +3,35 @@ import heapq
 
 import numpy as np
 
-from algorithm import directions, matrix, swap, find_zero, puzzle_to_tuple
+from algorithm import directions, matrix, swap, find_zero, puzzle_to_tuple, SIZE_HEIGHT, SIZE_WIDTH
 
 def manhattan_distance(puzzle):
-    height, width = len(puzzle), len(puzzle[0])
     distance = 0
 
-    for i in range(height):
-        for j in range(width):
+    for i in range(SIZE_HEIGHT):
+        for j in range(SIZE_WIDTH):
             tile = puzzle[i][j]
             if tile != 0:
-                target_i = (tile - 1) // width
-                target_j = (tile - 1) % width
+                target_i = (tile - 1) // SIZE_WIDTH
+                target_j = (tile - 1) % SIZE_WIDTH
                 distance += abs(i - target_i) + abs(j - target_j)
     return distance
 
 
 def hamming_distance(puzzle):
-    height, width = len(puzzle), len(puzzle[0])
     distance = 0
 
-    for i in range(height):
-        for j in range(width):
+    for i in range(SIZE_HEIGHT):
+        for j in range(SIZE_WIDTH):
             tile = puzzle[i][j]
             if tile != 0:  # Skip the empty tile
                 # Calculate correct position for this tile
-                target_i = (tile - 1) // width
-                target_j = (tile - 1) % width
+                target_i = (tile - 1) // SIZE_WIDTH
+                target_j = (tile - 1) % SIZE_WIDTH
                 # If tile is not in the right position, count it
                 if i != target_i or j != target_j:
                     distance += 1
+
 
     return distance
 
@@ -40,15 +39,14 @@ def hamming_distance(puzzle):
 def astr(puzzle, heuristic="manh"):
     start_time = timeit.default_timer()
     puzzle = np.array(puzzle)
-    height, width = puzzle.shape
 
     initial_state = puzzle_to_tuple(puzzle)
 
-    target_numbers = list(range(1, width * height)) + [0]
-    target = matrix(width, height, target_numbers)
+    target_numbers = list(range(1, SIZE_WIDTH * SIZE_HEIGHT)) + [0]
+    target = matrix(SIZE_WIDTH, SIZE_HEIGHT, target_numbers)
     target_tuple = puzzle_to_tuple(target)
 
-    visited = set({initial_state})
+    visited = {initial_state}
 
     parent = {initial_state: None}
     move_direction = {initial_state: None}
@@ -95,7 +93,7 @@ def astr(puzzle, heuristic="manh"):
         for direction, (di, dj) in directions.items():
             ni, nj = i + di, j + dj
 
-            if 0 <= ni < height and 0 <= nj < width:
+            if 0 <= ni < SIZE_HEIGHT and 0 <= nj < SIZE_WIDTH:
                 # Create new state by swapping empty tile
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)

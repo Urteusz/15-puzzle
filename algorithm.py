@@ -1,5 +1,8 @@
 import numpy as np
 
+SIZE_HEIGHT = 4
+SIZE_WIDTH = 4
+
 directions = {
             'L': (0, -1),  # Lewo
             'R': (0, 1),   # Prawo
@@ -8,6 +11,16 @@ directions = {
         }
 
 
+def read_board(filename):
+    global SIZE_HEIGHT, SIZE_WIDTH
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+
+    SIZE_HEIGHT, SIZE_WIDTH = map(int, lines[0].split())
+
+    puzzle = np.array([list(map(int, line.split())) for line in lines[1:]])
+
+    return puzzle
 
 def puzzle_to_tuple(puzzle):
     return tuple(map(tuple, puzzle))

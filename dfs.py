@@ -1,24 +1,12 @@
 import timeit
 import numpy as np
-from algorithm import directions, swap, puzzle_to_tuple, find_zero
-
+from algorithm import directions, puzzle_to_tuple, find_zero, matrix, SIZE_HEIGHT, SIZE_WIDTH
 
 def dfs(puzzle, search_order):
-    """
-    Implementacja algorytmu przeszukiwania w głąb (DFS) dla rozwiązania układanki przesuwnej.
 
-    Parametry:
-    puzzle (numpy.ndarray): Początkowy stan układanki jako tablica 2D
-    search_order (list): Kolejność przeszukiwania kierunków (np. ['U', 'R', 'D', 'L'])
-
-    Zwraca:
-    tuple: (ścieżka rozwiązania, liczba odwiedzonych stanów, liczba przetworzonych stanów,
-           maksymalna osiągnięta głębokość, czas wykonania w ms)
-    """
     start_time = timeit.default_timer()
     # Odwracamy kolejność przeszukiwania dla operacji na stosie (LIFO)
     search_order = search_order[::-1]
-    height, width = puzzle.shape
 
     # Znajdujemy pozycję zera (pustego pola) w początkowym stanie
     zero_pos = find_zero(puzzle)
@@ -27,7 +15,7 @@ def dfs(puzzle, search_order):
     initial_state = puzzle_to_tuple(puzzle)
 
     # Stan docelowy (ułożona układanka)
-    goal_array = np.reshape(np.array(list(range(1, width * height)) + [0]), (height, width))
+    goal_array = matrix(SIZE_WIDTH, SIZE_HEIGHT, list(range(1, SIZE_WIDTH * SIZE_HEIGHT)) + [0])
     target_state = puzzle_to_tuple(goal_array)
 
     # Śledzimy odwiedzone stany wraz z ich głębokością
@@ -70,8 +58,8 @@ def dfs(puzzle, search_order):
             ni, nj = i + di, j + dj  # Nowa pozycja zera po wykonaniu ruchu
 
             # Sprawdzamy czy ruch jest dozwolony (w granicach planszy)
-            if 0 <= ni < height and 0 <= nj < width:
-                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem (bez uzycia swap bo zbyt obciaza
+            if 0 <= ni < SIZE_HEIGHT and 0 <= nj < SIZE_WIDTH:
+                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem (bez uzycia swap bo zbyt obciaza)
                 new_state = [list(row) for row in current_state]
                 new_state[i][j], new_state[ni][nj] = new_state[ni][nj], new_state[i][j]
                 new_state_tuple = puzzle_to_tuple(new_state)
