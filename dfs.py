@@ -2,6 +2,7 @@ import timeit
 import numpy as np
 from algorithm import directions, puzzle_to_tuple, find_zero, matrix, SIZE_HEIGHT, SIZE_WIDTH
 
+
 def dfs(puzzle, search_order):
 
     start_time = timeit.default_timer()
@@ -33,7 +34,7 @@ def dfs(puzzle, search_order):
     max_depth = 20
 
     while stack:
-        # Pobieramy stan ze stosu (LIFO)
+        # Pobieramy stan ze stosu (LIFO - Last In, First Out)
         current_state, path, depth, zero_pos = stack.pop()
         processed_states += 1
 
@@ -59,7 +60,7 @@ def dfs(puzzle, search_order):
 
             # Sprawdzamy czy ruch jest dozwolony (w granicach planszy)
             if 0 <= ni < SIZE_HEIGHT and 0 <= nj < SIZE_WIDTH:
-                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem (bez uzycia swap bo zbyt obciaza)
+                # Tworzymy nowy stan przez zamianę miejscami zera z sąsiednim elementem
                 new_state = [list(row) for row in current_state]
                 new_state[i][j], new_state[ni][nj] = new_state[ni][nj], new_state[i][j]
                 new_state_tuple = puzzle_to_tuple(new_state)
@@ -68,6 +69,7 @@ def dfs(puzzle, search_order):
                 if new_state_tuple not in visited or visited[new_state_tuple] > depth + 1:
                     visited[new_state_tuple] = depth + 1
                     visited_states += 1
+                    # Dodajemy nowy stan do stosu wraz z zaktualizowaną ścieżką, głębokością i pozycją zera
                     stack.append((new_state_tuple, path + [direction], depth + 1, (ni, nj)))
 
     # Jeśli nie znaleziono rozwiązania

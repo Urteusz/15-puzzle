@@ -9,10 +9,6 @@ from bfs import bfs
 
 
 def create_folder_structure(base_path, acronyms, parameters, heuristics):
-    """
-    Tworzy strukturę folderów dla wszystkich algorytmów i ich parametrów/heurystyk.
-    Jeśli foldery już istnieją, usuwa je i tworzy nowe.
-    """
     # Najpierw upewnij się, że istnieje folder bazowy
     if not os.path.exists(base_path):
         os.makedirs(base_path)

@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 
 def addons_opener(acronym, choose, subcategories=None):
     countError = 0
-    """
-    Funkcja otwiera pliki z danymi i oblicza średnie wartości dla podanych parametrów.
-    """
     tab_parameter = subcategories or ["RDUL", "LUDR", "RDLU", "LURD", "DRUL", "ULDR", "DRLU", "ULRD"]
     ranges = [0, 2, 6, 16, 40, 94, 201, 413]  # Zakresy poziomów
     averages_per_order = {order: [0] * 7 for order in tab_parameter}  # Średnie dla każdego porządku

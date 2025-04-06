@@ -49,17 +49,21 @@ def bfs(puzzle, search_order):
                 state = parent[state]
             path.reverse()  # Odwracamy ścieżkę, aby była od początku do końca
 
+            # Głębokość rozwiązania to długość ścieżki
             solution_depth = len(path)
             max_depth = max(max_depth, solution_depth)
 
+            # Obliczanie czasu wykonania
             end_time = timeit.default_timer()
             execution_time = (end_time - start_time) * 1000  # Konwersja na milisekundy
+
+            # Zwracamy wyniki
             return path, visited_states, processed_states, max_depth, execution_time
 
         # Znajdujemy pozycję pustego pola (zera)
         i, j = find_zero(current_puzzle)
 
-        # Sprawdzamy każdy możliwy ruch według ustalonej kolejności
+        # Sprawdzamy każdy możliwy ruch według ustalonej kolejności przeszukiwania
         for direction in search_order:
             di, dj = directions[direction]  # Pobieramy zmianę współrzędnych dla danego kierunku
             ni, nj = i + di, j + dj  # Nowa pozycja zera po wykonaniu ruchu
@@ -70,13 +74,13 @@ def bfs(puzzle, search_order):
                 new_puzzle = swap(current_puzzle, i, j, ni, nj)
                 new_state = puzzle_to_tuple(new_puzzle)
 
-                # Jeśli stan nie był wcześniej odwiedzony, dodajemy go do kolejki
+                # Jeśli stan nie był wcześniej odwiedzony, dodajemy go do kolejki i aktualizujemy struktury danych
                 if new_state not in visited:
-                    queue.append(new_state)
-                    visited.add(new_state)
-                    visited_states += 1
-                    parent[new_state] = current_state
-                    move_direction[new_state] = direction
+                    queue.append(new_state)  # Dodanie do kolejki BFS
+                    visited.add(new_state)  # Oznaczenie jako odwiedzony
+                    visited_states += 1  # Aktualizacja licznika stanów odwiedzonych
+                    parent[new_state] = current_state  # Zapamiętanie rodzica dla odtworzenia ścieżki
+                    move_direction[new_state] = direction  # Zapamiętanie kierunku ruchu
 
                     # Obliczamy głębokość aktualnego stanu (długość ścieżki od stanu początkowego)
                     current_depth = 0
@@ -84,6 +88,8 @@ def bfs(puzzle, search_order):
                     while state != initial_state:
                         current_depth += 1
                         state = parent[state]
+
+                    # Aktualizujemy maksymalną głębokość
                     max_depth = max(max_depth, current_depth + 1)
 
     # Jeśli nie znaleziono rozwiązania
